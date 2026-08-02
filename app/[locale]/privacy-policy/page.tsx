@@ -1,0 +1,2 @@
+import { LegalPage } from '@/components/legal-page'; import { legalContent } from '@/lib/legal-content'; import { localizedMetadata } from '@/lib/seo'; import type { PublicLocale } from '@/lib/business-config';
+export function generateMetadata({params}:{params:{locale:PublicLocale}}){const p=legalContent['privacy-policy'];return localizedMetadata(params.locale,'privacy-policy',p.title[params.locale],p.description[params.locale])} export default function Page({params}:{params:{locale:PublicLocale}}){return <LegalPage locale={params.locale} slug="privacy-policy"/>}

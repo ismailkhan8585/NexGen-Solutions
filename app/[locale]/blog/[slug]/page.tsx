@@ -8,6 +8,8 @@ import { Footer } from '@/components/layout/footer';
 import { FloatingWhatsApp } from '@/components/layout/floating-whatsapp';
 import { GradientBadge } from '@/components/ui/gradient-badge';
 import { ArrowLeft, Calendar, Clock, Share2 } from 'lucide-react';
+import { businessConfig } from '@/lib/business-config';
+import { JsonLd, localizedMetadata } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,35 +18,36 @@ const getPost = cache(async (slug: string) => {
   return prisma.blogPost.findUnique({ where: { slug } });
 });
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: { slug: string; locale: 'ar' | 'en' } }): Promise<Metadata> {
   const post = await getPost(params.slug);
   if (!post) return {};
-  return { title: post.titleEn, description: post.excerptEn ?? undefined };
+  const title = params.locale === 'ar' ? post.titleAr ?? post.titleEn : post.titleEn;
+  const description = params.locale === 'ar' ? post.excerptAr ?? '' : post.excerptEn ?? '';
+  return localizedMetadata(params.locale, `blog/${post.slug}`, title, description);
 }
 
-export default async function BlogPostPage({ params }: { params: { slug: string; locale: string } }) {
+export default async function BlogPostPage({ params }: { params: { slug: string; locale: 'ar' | 'en' } }) {
   const post = await getPost(params.slug);
-  if (!post || !post.isPublished) notFound();
+  if (!post || !post.isPublished || (params.locale === 'ar' && (!post.titleAr || !post.contentAr))) notFound();
+  const ar = params.locale === 'ar';
+  const title = ar ? post.titleAr! : post.titleEn;
+  const url = `${businessConfig.appUrl}/${params.locale}/blog/${post.slug}`;
 
   const related = await prisma.blogPost.findMany({
-    where: { isPublished: true, category: post.category, slug: { not: post.slug } },
+    where: { isPublished: true, category: post.category, slug: { not: post.slug }, ...(ar ? { titleAr: { not: null } } : {}) },
     take: 3,
     select: { id: true, slug: true, titleEn: true, titleAr: true, coverImage: true },
   });
 
-  await prisma.blogPost.update({
-    where: { id: post.id },
-    data: { views: { increment: 1 } },
-  }).catch(() => {});
-
   return (
     <>
+      <JsonLd data={{'@context':'https://schema.org','@type':'Article',headline:title,description:(ar?post.excerptAr:post.excerptEn)||undefined,datePublished:post.publishedAt?.toISOString(),dateModified:post.updatedAt.toISOString(),author:{'@type':'Person',name:post.author},publisher:{'@type':'Organization',name:businessConfig.companyName[params.locale],url:businessConfig.appUrl},mainEntityOfPage:url,...(post.coverImage?{image:post.coverImage}:{})}} />
       <Navbar />
       <main className="pt-[72px]">
         <article className="section-padding bg-surface">
           <div className="container-max max-w-3xl">
             <a href={`/${params.locale}/blog`} className="inline-flex items-center gap-2 text-ink-secondary hover:text-white text-sm mb-8 transition-colors">
-              <ArrowLeft className="w-4 h-4" /> All Articles
+              <ArrowLeft className="w-4 h-4 rtl:rotate-180" /> {ar ? 'كل المقالات' : 'All Articles'}
             </a>
 
             <GradientBadge className="mb-4">{post.category.replace('_', ' ')}</GradientBadge>
@@ -57,11 +60,11 @@ export default async function BlogPostPage({ params }: { params: { slug: string;
               <span>·</span>
               <span className="flex items-center gap-1">
                 <Calendar className="w-4 h-4" />
-                {post.publishedAt ? new Date(post.publishedAt).toLocaleDateString() : ''}
+                {post.publishedAt ? new Intl.DateTimeFormat(ar ? 'ar-SA' : 'en-SA', { dateStyle: 'medium', timeZone: 'Asia/Riyadh' }).format(post.publishedAt) : ''}
               </span>
               <span>·</span>
               <span className="flex items-center gap-1">
-                <Clock className="w-4 h-4" /> {post.readTime} min read
+                <Clock className="w-4 h-4" /> {post.readTime} {ar ? 'دقائق قراءة' : 'min read'}
               </span>
             </div>
 
@@ -72,7 +75,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string;
             )}
 
             <div className="prose prose-invert max-w-none">
-              {(params.locale === 'ar' ? post.contentAr ?? post.contentEn : post.contentEn)?.split('\n').map((line, i) => {
+              {(ar ? post.contentAr : post.contentEn)?.split('\n').map((line, i) => {
                 if (line.startsWith('# ')) return <h1 key={i} className="font-display font-bold text-2xl text-white mt-6 mb-3">{line.slice(2)}</h1>;
                 if (line.startsWith('## ')) return <h2 key={i} className="font-display font-semibold text-xl text-white mt-6 mb-3">{line.slice(3)}</h2>;
                 if (line.startsWith('- ')) return <li key={i} className="text-ink-secondary ml-4">{line.slice(2)}</li>;
@@ -83,13 +86,13 @@ export default async function BlogPostPage({ params }: { params: { slug: string;
 
             <div className="flex items-center gap-3 mt-12 pt-8 border-t border-surface-border">
               <button className="inline-flex items-center gap-2 rounded-xl border border-surface-border bg-surface-card px-4 py-2 text-sm text-ink-secondary hover:text-white transition-colors">
-                <Share2 className="w-4 h-4" /> Share
+                <Share2 className="w-4 h-4" /> {ar ? 'مشاركة' : 'Share'}
               </button>
             </div>
 
             {related.length > 0 && (
               <div className="mt-16">
-                <h2 className="font-display font-semibold text-2xl text-white mb-6">Related Articles</h2>
+                <h2 className="font-display font-semibold text-2xl text-white mb-6">{ar ? 'مقالات ذات صلة' : 'Related Articles'}</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {related.map((rel) => (
                     <a key={rel.id} href={`/${params.locale}/blog/${rel.slug}`} className="group rounded-2xl overflow-hidden bg-surface-card border border-surface-border hover:border-surface-borderHover transition-all">

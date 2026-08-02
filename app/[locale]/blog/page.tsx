@@ -9,15 +9,14 @@ import { BlogBrowser } from '@/components/blog/blog-browser';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export const metadata: Metadata = {
-  title: 'Insights',
-  description: 'Practical articles about product engineering, design, AI, cloud, and digital growth.',
-};
+export function generateMetadata({ params }: { params: { locale: string } }): Metadata {
+  return params.locale === 'ar' ? { title: 'المقالات', description: 'مقالات منشورة حول المنتجات الرقمية والتصميم والتطوير.' } : { title: 'Insights', description: 'Published articles about digital products, design, and engineering.' };
+}
 
-export default async function BlogPage({ params }: { params: { locale: string } }) {
+export default async function BlogPage({ params }: { params: { locale: 'ar' | 'en' } }) {
   await ensurePrismaConnection();
   const posts = await prisma.blogPost.findMany({
-    where: { isPublished: true },
+    where: { isPublished: true, ...(params.locale === 'ar' ? { titleAr: { not: null } } : {}) },
     orderBy: { publishedAt: 'desc' },
     select: {
       id: true,
@@ -41,12 +40,12 @@ export default async function BlogPage({ params }: { params: { locale: string } 
         <section className="section-padding bg-surface">
           <div className="container-max">
             <div className="mx-auto mb-12 max-w-3xl text-center sm:mb-16">
-              <GradientBadge className="mb-4">NexGen Insights</GradientBadge>
+              <GradientBadge className="mb-4">{params.locale === 'ar' ? 'مقالات نيكس جين' : 'NexGen Insights'}</GradientBadge>
               <h1 className="font-display text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
-                Ideas for building better digital products
+                {params.locale === 'ar' ? 'أفكار عملية لبناء منتجات رقمية أفضل' : 'Practical ideas for better digital products'}
               </h1>
               <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-ink-secondary sm:text-lg">
-                Clear, practical thinking from our engineering, design, AI, and growth teams.
+                {params.locale === 'ar' ? 'محتوى منشور حول التصميم والتطوير والذكاء الاصطناعي وتشغيل المنتجات.' : 'Published thinking about design, engineering, AI, and product operations.'}
               </p>
             </div>
             <BlogBrowser

@@ -16,8 +16,7 @@ export async function GET() {
       status: i.status,
       createdAt: i.createdAt.toISOString(),
     })));
-  } catch (error) {
-    console.error('Failed:', error);
-    return NextResponse.json({ error: 'Failed' }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: 'storage_unavailable' }, { status: 503 });
   }
 }

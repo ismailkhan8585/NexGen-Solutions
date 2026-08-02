@@ -1,140 +1,33 @@
 import type { Metadata } from 'next';
-import Image from 'next/image';
-import { cache } from 'react';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ensurePrismaConnection, prisma } from '@/lib/prisma';
+import { ArrowLeft, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { Navbar } from '@/components/layout/navbar';
 import { Footer } from '@/components/layout/footer';
 import { FloatingWhatsApp } from '@/components/layout/floating-whatsapp';
-import { GradientBadge } from '@/components/ui/gradient-badge';
-import { GradientButton } from '@/components/ui/gradient-button';
-import { TechPill } from '@/components/ui/tech-pill';
-import { Check, ArrowLeft } from 'lucide-react';
+import { deliveryProcess, findService, serviceFaqs } from '@/lib/service-catalog';
+import { localizedMetadata } from '@/lib/seo';
 
-export const dynamic = 'force-dynamic';
-
-const getService = cache(async (slug: string) => {
-  await ensurePrismaConnection();
-  return prisma.service.findUnique({ where: { slug } });
-});
-
-export async function generateMetadata({ params }: { params: { slug: string; locale: string } }): Promise<Metadata> {
-  const service = await getService(params.slug);
-  if (!service) return {};
-  return {
-    title: params.locale === 'ar' ? service.nameAr ?? service.nameEn : service.nameEn,
-    description: params.locale === 'ar' ? service.descriptionAr ?? service.descriptionEn : service.descriptionEn,
-  };
+export function generateMetadata({ params }: { params: { slug: string; locale: 'ar' | 'en' } }): Metadata {
+  const service = findService(params.slug);
+  return service ? localizedMetadata(params.locale, `services/${service.slug}`, service.name[params.locale], service.summary[params.locale]) : {};
 }
 
-export default async function ServiceDetailPage({ params }: { params: { slug: string; locale: string } }) {
-  const service = await getService(params.slug);
-  if (!service || !service.isActive) notFound();
-
-  const serviceCategoryMap: Record<string, string> = {
-    web: 'WEB',
-    app: 'MOBILE',
-    design: 'DESIGN',
-    ecommerce: 'ECOMMERCE',
-    software: 'SOFTWARE',
-    ai: 'AI',
-    marketing: 'MARKETING',
-    cloud: 'CLOUD',
-    security: 'SOFTWARE',
-    consulting: 'SOFTWARE',
-    saas: 'SAAS',
-    blockchain: 'BLOCKCHAIN',
-  };
-  const relatedCategory = serviceCategoryMap[service.slug] ?? 'WEB';
-
-  const projects = await prisma.project.findMany({
-    where: { isActive: true, category: relatedCategory as never },
-    take: 3,
-    orderBy: { createdAt: 'desc' },
-    select: { id: true, slug: true, titleEn: true, titleAr: true, coverImage: true },
-  });
-
-  return (
-    <>
-      <Navbar />
-      <main className="pt-[72px]">
-        <section className="section-padding bg-surface">
-          <div className="container-max max-w-4xl">
-            <a href={`/${params.locale}/services`} className="inline-flex items-center gap-2 text-ink-secondary hover:text-white text-sm mb-8 transition-colors">
-              <ArrowLeft className="w-4 h-4" />
-              All Services
-            </a>
-
-            <GradientBadge className="mb-4">{service.startingPrice}</GradientBadge>
-            <h1 className="font-display font-bold text-4xl sm:text-5xl text-white mb-4">
-              {params.locale === 'ar' ? service.nameAr ?? service.nameEn : service.nameEn}
-            </h1>
-            <p className="text-ink-secondary text-lg leading-relaxed mb-8">
-              {params.locale === 'ar' ? service.descriptionAr ?? service.descriptionEn : service.descriptionEn}
-            </p>
-
-            <div className="flex flex-wrap gap-2 mb-12">
-              {service.techStack.map((tech) => (
-                <TechPill key={tech}>{tech}</TechPill>
-              ))}
-            </div>
-
-            <h2 className="font-display font-semibold text-2xl text-white mb-6">What&apos;s Included</h2>
-            <ul className="space-y-3 mb-12">
-              {service.features.map((feature, i) => (
-                <li key={i} className="flex items-start gap-3 text-ink-secondary">
-                  <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0 mt-0.5">
-                    <Check className="w-4 h-4 text-emerald-400" />
-                  </div>
-                  {feature}
-                </li>
-              ))}
-            </ul>
-
-            <div className="bg-surface-card border border-surface-border rounded-2xl p-8 text-center mb-12">
-              <h2 className="font-display font-semibold text-2xl text-white mb-3">
-                Ready to start?
-              </h2>
-              <p className="text-ink-secondary mb-6">
-                Get a free consultation and quote for your project.
-              </p>
-              <a href={`/${params.locale}/contact`}>
-                <GradientButton className="px-8 py-3.5 text-base">
-                  Start This Service
-                </GradientButton>
-              </a>
-            </div>
-
-            {projects.length > 0 && (
-              <>
-                <h2 className="font-display font-semibold text-2xl text-white mb-6">Related Projects</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {projects.map((project) => (
-                    <a
-                      key={project.id}
-                      href={`/${params.locale}/work/${project.slug}`}
-                      className="group rounded-2xl overflow-hidden bg-surface-card border border-surface-border hover:border-surface-borderHover transition-all"
-                    >
-                      {project.coverImage && (
-                        <div className="relative aspect-video overflow-hidden">
-                          <Image src={project.coverImage} alt={project.titleEn} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-500" />
-                        </div>
-                      )}
-                      <div className="p-4">
-                        <h3 className="font-display font-medium text-white text-sm">
-                          {params.locale === 'ar' ? project.titleAr ?? project.titleEn : project.titleEn}
-                        </h3>
-                      </div>
-                    </a>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-        </section>
-      </main>
-      <Footer />
-      <FloatingWhatsApp />
-    </>
-  );
+export default function ServiceDetailPage({ params }: { params: { slug: string; locale: 'ar' | 'en' } }) {
+  const service = findService(params.slug);
+  if (!service) notFound();
+  const locale = params.locale;
+  const Arrow = locale === 'ar' ? ArrowLeft : ArrowRight;
+  const sectionTitles = locale === 'ar'
+    ? { problems: 'المشكلات التي نعالجها', features: 'المزايا الرئيسية', process: 'طريقة التنفيذ', tech: 'تقنيات مناسبة للخدمة', uses: 'استخدامات في السوق السعودي', faq: 'أسئلة شائعة', cta: 'لنناقش احتياج مشروعك', ctaText: 'ابدأ باستشارة تساعد على تحديد النطاق والخطوة التالية.', button: 'اطلب استشارة', back: 'جميع الخدمات' }
+    : { problems: 'Problems this service addresses', features: 'Key features', process: 'Delivery process', tech: 'Relevant technologies', uses: 'Saudi business use cases', faq: 'Frequently asked questions', cta: 'Let’s discuss your project needs', ctaText: 'Start with a consultation to define scope and the next practical step.', button: 'Request a consultation', back: 'All services' };
+  return <><Navbar /><main className="pt-[72px]"><section className="section-padding bg-surface"><div className="container-max max-w-5xl px-4 sm:px-6 lg:px-8">
+    <Link href={`/${locale}/services`} className="inline-flex min-h-[44px] items-center gap-2 text-sm text-ink-secondary hover:text-white"><Arrow className="h-4 w-4 rotate-180" />{sectionTitles.back}</Link>
+    <header className="mt-8 max-w-3xl"><p className="text-sm font-semibold text-brand-cyan-300">{locale === 'ar' ? 'خدمة رقمية' : 'Digital service'}</p><h1 className="mt-4 font-display text-4xl font-bold leading-tight text-white sm:text-5xl">{service.name[locale]}</h1><p className="mt-5 text-lg leading-8 text-ink-secondary">{service.value[locale]}</p></header>
+    <div className="mt-14 grid gap-6 md:grid-cols-2">{[[sectionTitles.problems, service.problems[locale]], [sectionTitles.features, service.features[locale]]].map(([title, items]) => <section key={title as string} className="rounded-2xl border border-surface-border bg-surface-card p-6"><h2 className="font-display text-xl font-semibold text-white">{title}</h2><ul className="mt-5 space-y-3">{(items as readonly string[]).map((item) => <li key={item} className="flex gap-3 text-sm leading-6 text-ink-secondary"><CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-brand-cyan-400" />{item}</li>)}</ul></section>)}</div>
+    <section className="mt-14"><h2 className="font-display text-2xl font-semibold text-white">{sectionTitles.process}</h2><ol className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{deliveryProcess[locale].map((step, index) => <li key={step} className="rounded-xl border border-surface-border bg-surface-card p-5"><span className="font-mono text-sm text-brand-cyan-300">{String(index + 1).padStart(2, '0')}</span><p className="mt-2 text-sm font-medium text-white">{step}</p></li>)}</ol></section>
+    <div className="mt-14 grid gap-8 md:grid-cols-2"><section><h2 className="font-display text-2xl font-semibold text-white">{sectionTitles.tech}</h2><div className="mt-5 flex flex-wrap gap-2">{service.technologies.map((tech) => <span key={tech} className="rounded-lg border border-surface-border bg-surface-card px-3 py-2 text-sm text-ink-secondary">{tech}</span>)}</div></section><section><h2 className="font-display text-2xl font-semibold text-white">{sectionTitles.uses}</h2><ul className="mt-5 space-y-3">{service.useCases[locale].map((item) => <li key={item} className="flex gap-3 text-sm text-ink-secondary"><CheckCircle2 className="h-5 w-5 shrink-0 text-brand-cyan-400" />{item}</li>)}</ul></section></div>
+    <section className="mt-14"><h2 className="font-display text-2xl font-semibold text-white">{sectionTitles.faq}</h2><div className="mt-5 divide-y divide-surface-border rounded-2xl border border-surface-border bg-surface-card">{serviceFaqs[locale].map((faq) => <details key={faq.question} className="group p-5"><summary className="cursor-pointer list-none font-semibold text-white">{faq.question}</summary><p className="mt-3 text-sm leading-6 text-ink-secondary">{faq.answer}</p></details>)}</div></section>
+    <section className="mt-14 rounded-3xl border border-brand-cyan-500/20 bg-brand-cyan-500/5 p-7 text-center sm:p-10"><h2 className="font-display text-2xl font-semibold text-white">{sectionTitles.cta}</h2><p className="mx-auto mt-3 max-w-xl text-ink-secondary">{sectionTitles.ctaText}</p><Link href={`/${locale}/contact`} className="mt-6 inline-flex min-h-[48px] items-center gap-2 rounded-xl bg-white px-6 py-3 font-semibold text-surface">{sectionTitles.button}<Arrow className="h-4 w-4" /></Link></section>
+  </div></section></main><Footer /><FloatingWhatsApp /></>;
 }

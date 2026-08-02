@@ -21,7 +21,7 @@ interface BlogSummary {
 
 const categories = ['All', 'WEB_DEV', 'MOBILE', 'AI', 'DESIGN', 'BUSINESS', 'CLOUD', 'SECURITY', 'GENERAL'];
 
-export function BlogBrowser({ posts, locale }: { posts: BlogSummary[]; locale: string }) {
+export function BlogBrowser({ posts, locale }: { posts: BlogSummary[]; locale: 'ar' | 'en' }) {
   const [category, setCategory] = useState('All');
   const [search, setSearch] = useState('');
   const filtered = useMemo(() => {
@@ -39,16 +39,16 @@ export function BlogBrowser({ posts, locale }: { posts: BlogSummary[]; locale: s
       <div className="mx-auto mb-10 max-w-5xl rounded-2xl border border-surface-border bg-surface-card/80 p-3 sm:p-4">
         <label className="relative block">
           <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted rtl:left-auto rtl:right-4" />
-          <span className="sr-only">Search articles</span>
+          <span className="sr-only">{locale === 'ar' ? 'البحث في المقالات' : 'Search articles'}</span>
           <input
             type="search"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search articles, topics, or ideas..."
+            placeholder={locale === 'ar' ? 'ابحث في المقالات والموضوعات' : 'Search articles and topics'}
             className="w-full rounded-xl border border-surface-border bg-surface py-3 pl-11 pr-4 text-sm text-white outline-none transition focus:border-brand-purple-500 focus:ring-4 focus:ring-brand-purple-500/10 rtl:pl-4 rtl:pr-11"
           />
         </label>
-        <div className="mt-3 flex gap-2 overflow-x-auto pb-1" aria-label="Article categories">
+        <div className="mt-3 flex gap-2 overflow-x-auto pb-1" aria-label={locale === 'ar' ? 'تصنيفات المقالات' : 'Article categories'}>
           {categories.map((item) => (
             <button
               key={item}
@@ -61,7 +61,7 @@ export function BlogBrowser({ posts, locale }: { posts: BlogSummary[]; locale: s
                   : 'border border-surface-border bg-surface text-ink-secondary hover:text-white'
               }`}
             >
-              {item.replace('_', ' ')}
+              {locale === 'ar' ? ({ All: 'الكل', WEB_DEV: 'تطوير الويب', MOBILE: 'تطبيقات الجوال', AI: 'الذكاء الاصطناعي', DESIGN: 'التصميم', BUSINESS: 'الأعمال', CLOUD: 'الحوسبة السحابية', SECURITY: 'الأمان', GENERAL: 'عام' } as Record<string, string>)[item] : item.replace('_', ' ')}
             </button>
           ))}
         </div>
@@ -70,8 +70,8 @@ export function BlogBrowser({ posts, locale }: { posts: BlogSummary[]; locale: s
       {!featured ? (
         <div className="rounded-3xl border border-dashed border-surface-border bg-surface-card/60 px-6 py-16 text-center">
           <SearchX className="mx-auto h-10 w-10 text-brand-purple-400" />
-          <h2 className="mt-4 font-display text-xl font-semibold text-white">No matching articles</h2>
-          <p className="mt-2 text-sm text-ink-muted">Try a broader search or choose another category.</p>
+          <h2 className="mt-4 font-display text-xl font-semibold text-white">{locale === 'ar' ? 'لا توجد مقالات مطابقة' : 'No matching articles'}</h2>
+          <p className="mt-2 text-sm text-ink-muted">{locale === 'ar' ? 'جرّب بحثاً أوسع أو اختر تصنيفاً آخر.' : 'Try a broader search or choose another category.'}</p>
         </div>
       ) : (
         <>
@@ -89,7 +89,7 @@ export function BlogBrowser({ posts, locale }: { posts: BlogSummary[]; locale: s
               </p>
               <div className="mt-6 flex flex-wrap items-center gap-3 text-xs text-ink-muted">
                 <span>{featured.author}</span><span aria-hidden>•</span>
-                <span className="inline-flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{featured.readTime} min read</span>
+                <span className="inline-flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{featured.readTime} {locale === 'ar' ? 'دقائق قراءة' : 'min read'}</span>
               </div>
             </div>
           </Link>
@@ -106,7 +106,7 @@ export function BlogBrowser({ posts, locale }: { posts: BlogSummary[]; locale: s
                     {locale === 'ar' ? post.titleAr ?? post.titleEn : post.titleEn}
                   </h2>
                   <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-ink-secondary">{locale === 'ar' ? post.excerptAr ?? post.excerptEn : post.excerptEn}</p>
-                  <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-brand-purple-400">Read article <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1 rtl:rotate-180" /></span>
+                  <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-brand-purple-400">{locale === 'ar' ? 'قراءة المقال' : 'Read article'} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1 rtl:rotate-180" /></span>
                 </div>
               </Link>
             ))}

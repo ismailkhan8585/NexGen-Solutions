@@ -6,6 +6,12 @@ import { LOCALES, DEFAULT_LOCALE } from './lib/constants';
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  const nextWithLocale = (locale: 'ar' | 'en') => {
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set('x-site-locale', locale);
+    return NextResponse.next({ request: { headers: requestHeaders } });
+  };
+
   const localizedAdminMatch = pathname.match(/^\/(en|ar)\/admin(?=\/|$)(.*)$/);
   if (localizedAdminMatch) {
     const url = request.nextUrl.clone();
@@ -15,7 +21,7 @@ export async function middleware(request: NextRequest) {
 
   if (pathname.startsWith('/admin')) {
     if (pathname.startsWith('/admin/login')) {
-      return NextResponse.next();
+      return nextWithLocale('en');
     }
 
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
@@ -24,7 +30,7 @@ export async function middleware(request: NextRequest) {
       loginUrl.searchParams.set('callbackUrl', pathname);
       return NextResponse.redirect(loginUrl);
     }
-    return NextResponse.next();
+    return nextWithLocale('en');
   }
 
   if (
@@ -34,7 +40,7 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/favicon') ||
     pathname.includes('.')
   ) {
-    return NextResponse.next();
+    return nextWithLocale('en');
   }
 
   const pathnameLocale = LOCALES.find(
@@ -42,18 +48,11 @@ export async function middleware(request: NextRequest) {
   );
 
   if (pathnameLocale) {
-    return NextResponse.next();
+    return nextWithLocale(pathnameLocale);
   }
 
-  const acceptLang = request.headers.get('accept-language') ?? '';
-  const browserLocale = acceptLang.split(',')[0].split('-')[0].toLowerCase();
-
-  const locale = (LOCALES as readonly string[]).includes(browserLocale)
-    ? browserLocale
-    : DEFAULT_LOCALE;
-
   const url = request.nextUrl.clone();
-  url.pathname = `/${locale}${pathname === '/' ? '' : pathname}`;
+  url.pathname = `/${DEFAULT_LOCALE}${pathname === '/' ? '' : pathname}`;
   return NextResponse.redirect(url);
 }
 

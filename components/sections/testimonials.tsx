@@ -16,14 +16,6 @@ export interface TestimonialData {
   rating: number;
 }
 
-const countryFlags: Record<string, string> = {
-  Pakistan: '🇵🇰',
-  'Saudi Arabia': '🇸🇦',
-  UAE: '🇦🇪',
-  UK: '🇬🇧',
-  USA: '🇺🇸',
-};
-
 export function Testimonials({ testimonials }: { testimonials: TestimonialData[] }) {
   const { t, locale } = useI18n();
 
@@ -43,8 +35,7 @@ export function Testimonials({ testimonials }: { testimonials: TestimonialData[]
         <StaggerList className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {testimonials.length === 0 && (
             <div className="col-span-full rounded-2xl border border-dashed border-surface-border bg-surface-card/60 px-6 py-14 text-center">
-              <p className="font-display font-semibold text-white">Client stories are coming soon</p>
-              <p className="mt-2 text-sm text-ink-muted">We are preparing verified project outcomes for publication.</p>
+              <p className="font-display font-semibold text-white">{t('common.empty')}</p>
             </div>
           )}
           {testimonials.map((testimonial) => (
@@ -70,7 +61,7 @@ export function Testimonials({ testimonials }: { testimonials: TestimonialData[]
                     <p className="text-ink-muted text-xs">
                       {testimonial.clientRole}
                       {testimonial.clientCompany ? ` · ${testimonial.clientCompany}` : ''}
-                      {testimonial.clientCountry ? ` ${countryFlags[testimonial.clientCountry] ?? ''}` : ''}
+                      {testimonial.clientCountry ? ` · ${testimonial.clientCountry}` : ''}
                     </p>
                   </div>
                 </div>

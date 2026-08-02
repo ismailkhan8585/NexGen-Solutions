@@ -7,6 +7,8 @@ import { GradientBadge } from '@/components/ui/gradient-badge';
 import { StaggerList, StaggerItem } from '@/components/animations/stagger-list';
 import { TechPill } from '@/components/ui/tech-pill';
 import { ArrowRight, ExternalLink } from 'lucide-react';
+import Link from 'next/link';
+import { isDemoProject } from '@/lib/projects';
 
 export interface ProjectData {
   id: string;
@@ -70,18 +72,18 @@ export function Portfolio({ projects }: { projects: ProjectData[] }) {
         <StaggerList className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {projects.length === 0 && (
             <div className="col-span-full rounded-2xl border border-dashed border-surface-border bg-surface-card/60 px-6 py-14 text-center">
-              <p className="font-display font-semibold text-white">New case studies are on the way</p>
-              <p className="mt-2 text-sm text-ink-muted">Contact us to see relevant work for your industry.</p>
+              <p className="font-display font-semibold text-white">{t('work.emptyTitle')}</p>
+              <p className="mt-2 text-sm text-ink-muted">{t('work.emptyText')}</p>
             </div>
           )}
           {projects.length > 0 && filtered.length === 0 && filter !== 'all' && (
             <div className="col-span-full text-center py-16 text-ink-muted text-sm">
-              No projects in this category.
+              {t('work.filterEmpty')}
             </div>
           )}
           {filtered.map((project) => (
             <StaggerItem key={project.id}>
-              <a
+              <Link
                 href={`/${locale}/work/${project.slug}`}
                 className="group block rounded-2xl overflow-hidden bg-surface-card border border-surface-border transition-all duration-300 hover:border-surface-borderHover hover:scale-[1.02] hover:shadow-2xl hover:shadow-brand-purple-500/20"
               >
@@ -111,31 +113,32 @@ export function Portfolio({ projects }: { projects: ProjectData[] }) {
                   <h3 className="font-display font-semibold text-white text-lg mb-3">
                     {locale === 'ar' ? project.titleAr ?? project.titleEn : project.titleEn}
                   </h3>
+                  {isDemoProject(project.liveUrl) && <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gold-400">{t('work.demo')}</p>}
                   <div className="flex flex-wrap gap-1.5 mb-3">
                     {project.techStack.slice(0, 4).map((tech) => (
                       <TechPill key={tech}>{tech}</TechPill>
                     ))}
                   </div>
-                  {project.liveUrl && (
+                  {project.liveUrl && !isDemoProject(project.liveUrl) && (
                     <span className="inline-flex items-center gap-1 text-brand-purple-400 text-sm hover:text-brand-purple-300 transition-colors">
                       <ExternalLink className="w-4 h-4" />
                       {t('work.liveDemo')}
                     </span>
                   )}
                 </div>
-              </a>
+              </Link>
             </StaggerItem>
           ))}
         </StaggerList>
 
 
         <div className="text-center mt-12">
-          <a href={`/${locale}/work`}>
+          <Link href={`/${locale}/work`}>
             <span className="inline-flex items-center gap-2 bg-gradient-to-r from-brand-purple-500 to-brand-cyan-500 text-white rounded-xl px-6 py-3 font-semibold hover:shadow-lg hover:shadow-brand-purple-500/30 transition-all">
               {t('work.viewAll')}
               <ArrowRight className="w-4 h-4" />
             </span>
-          </a>
+          </Link>
         </div>
       </div>
     </section>

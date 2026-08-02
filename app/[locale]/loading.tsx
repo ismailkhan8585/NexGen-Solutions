@@ -14,7 +14,7 @@ function CardSkeleton() {
 
 export default function Loading() {
   return (
-    <main className="min-h-screen bg-surface px-4 pb-20 pt-32 sm:px-6 lg:px-8" aria-busy="true" aria-label="Loading page content">
+    <main className="min-h-screen bg-surface px-4 pb-20 pt-32 sm:px-6 lg:px-8" aria-busy="true">
       <div className="container-max">
         <div className="mx-auto mb-14 max-w-2xl space-y-4 text-center">
           <div className="mx-auto h-7 w-28 animate-pulse rounded-full bg-brand-purple-500/15" />

@@ -9,7 +9,10 @@ import { Lock, Mail, AlertCircle } from 'lucide-react';
 export default function AdminLoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') ?? '/admin/dashboard';
+  const requestedCallback = searchParams.get('callbackUrl');
+  const callbackUrl = requestedCallback?.startsWith('/admin') && !requestedCallback.startsWith('/admin/login')
+    ? requestedCallback
+    : '/admin/dashboard';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -57,11 +60,14 @@ export default function AdminLoginPage() {
           )}
 
           <div>
-            <label className="block text-ink-secondary text-sm mb-1.5">Email</label>
+            <label htmlFor="admin-email" className="block text-ink-secondary text-sm mb-1.5">Email</label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted" />
               <input
                 type="email"
+                id="admin-email"
+                name="email"
+                autoComplete="username"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -72,11 +78,14 @@ export default function AdminLoginPage() {
           </div>
 
           <div>
-            <label className="block text-ink-secondary text-sm mb-1.5">Password</label>
+            <label htmlFor="admin-password" className="block text-ink-secondary text-sm mb-1.5">Password</label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted" />
               <input
                 type="password"
+                id="admin-password"
+                name="password"
+                autoComplete="current-password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -90,10 +99,6 @@ export default function AdminLoginPage() {
             {loading ? 'Signing in...' : 'Sign In'}
           </GradientButton>
         </form>
-
-        <p className="text-center text-ink-muted text-xs mt-6">
-          Demo: admin@nexgensolutions.agency / Admin@123456
-        </p>
       </div>
     </div>
   );

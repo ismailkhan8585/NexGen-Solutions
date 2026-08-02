@@ -55,8 +55,7 @@ export async function GET() {
       })),
       inquiriesByMonth,
     });
-  } catch (error) {
-    console.error('Dashboard error:', error);
+  } catch {
     return NextResponse.json({ error: 'Failed' }, { status: 500 });
   }
 }

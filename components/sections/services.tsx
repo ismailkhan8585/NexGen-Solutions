@@ -1,6 +1,7 @@
 'use client';
 
 import { useI18n } from '@/components/i18n-provider';
+import Link from 'next/link';
 import { GradientBadge } from '@/components/ui/gradient-badge';
 import { GradientText } from '@/components/ui/gradient-text';
 import { StaggerList, StaggerItem } from '@/components/animations/stagger-list';
@@ -46,7 +47,7 @@ export function Services({ services }: { services: ServiceData[] }) {
         <StaggerList className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {services.length === 0 && (
             <div className="col-span-full text-center py-16 text-ink-muted text-sm">
-              No services available yet.
+              {t('common.empty')}
             </div>
           )}
           {services.map((service, i) => {
@@ -82,9 +83,6 @@ export function Services({ services }: { services: ServiceData[] }) {
                   <h3 className="font-display font-semibold text-white text-xl mb-1">
                     {locale === 'ar' ? service.nameAr ?? service.nameEn : service.nameEn}
                   </h3>
-                  {locale === 'ar' && service.nameEn && (
-                    <p className="text-ink-muted text-sm mb-2">{service.nameEn}</p>
-                  )}
                   <p className="text-ink-secondary text-sm mb-4 leading-relaxed">
                     {locale === 'ar'
                       ? service.descriptionAr ?? service.descriptionEn
@@ -102,9 +100,11 @@ export function Services({ services }: { services: ServiceData[] }) {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-ink-muted text-sm">
-                      {t('services.starting')} · {service.startingPrice}
+                      {service.techStack.length > 0
+                        ? `${service.techStack.length} ${locale === 'ar' ? 'تقنيات' : 'technologies'}`
+                        : ''}
                     </span>
-                    <a
+                    <Link
                       href={`/${locale}/services/${service.slug}`}
                       className={`inline-flex items-center gap-1 text-sm font-medium transition-colors ${
                         isPurple
@@ -114,7 +114,7 @@ export function Services({ services }: { services: ServiceData[] }) {
                     >
                       {t('services.learnMore')}
                       <ArrowRight className="w-4 h-4" />
-                    </a>
+                    </Link>
                   </div>
                 </div>
               </StaggerItem>
@@ -124,12 +124,12 @@ export function Services({ services }: { services: ServiceData[] }) {
 
 
         <div className="text-center mt-12">
-          <a href={`/${locale}/services`}>
+          <Link href={`/${locale}/services`}>
             <span className="inline-flex items-center gap-2 bg-gradient-to-r from-brand-purple-500 to-brand-cyan-500 text-white rounded-xl px-6 py-3 font-semibold hover:shadow-lg hover:shadow-brand-purple-500/30 transition-all">
               {t('services.viewAll')}
               <ArrowRight className="w-4 h-4" />
             </span>
-          </a>
+          </Link>
         </div>
       </div>
     </section>

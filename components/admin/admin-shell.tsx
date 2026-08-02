@@ -1,18 +1,20 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import {
   LayoutDashboard, FolderKanban, Briefcase, Users, FileText,
-  Mail, Star, Settings, BarChart3, LogOut, Menu, X,
+  Mail, Star, Settings, BarChart3, LogOut, Menu, X, CircleHelp,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/projects', label: 'Projects', icon: FolderKanban },
+  { href: '/admin/services', label: 'Services', icon: Briefcase },
+  { href: '/admin/faqs', label: 'FAQs', icon: CircleHelp },
   { href: '/admin/inquiries', label: 'Inquiries', icon: Mail },
   { href: '/admin/team', label: 'Team', icon: Users },
   { href: '/admin/blog', label: 'Blog', icon: FileText },
@@ -27,6 +29,12 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  useEffect(() => {
+    if (status === 'unauthenticated' && pathname !== '/admin/login') {
+      router.replace(`/admin/login?callbackUrl=${encodeURIComponent(pathname)}`);
+    }
+  }, [pathname, router, status]);
+
   if (status === 'loading') {
     return (
       <div className="min-h-screen bg-surface flex items-center justify-center">
@@ -36,7 +44,6 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   }
 
   if (!session && pathname !== '/admin/login') {
-    router.push('/admin/login');
     return null;
   }
 

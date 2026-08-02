@@ -1,19 +1,23 @@
 'use client';
 
 import { WhatsAppIcon } from '@/components/icons/whatsapp-icon';
-import { WHATSAPP_URL } from '@/lib/constants';
+import { useI18n } from '@/components/i18n-provider';
+import { getWhatsAppUrl } from '@/lib/business-config';
 
 export function FloatingWhatsApp() {
+  const { locale, t } = useI18n();
+  const whatsappUrl = getWhatsAppUrl(locale);
+  if (!whatsappUrl) return null;
+
   return (
     <a
-      href={WHATSAPP_URL}
+      href={whatsappUrl}
       target="_blank"
       rel="noopener noreferrer"
-      aria-label="Chat on WhatsApp"
-      className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-green-600 flex items-center justify-center shadow-lg shadow-green-600/30 hover:bg-green-500 transition-all hover:scale-110 active:scale-95 animate-pulse-glow"
+      aria-label={t('contact.whatsapp')}
+      className="fixed bottom-5 end-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-green-600 shadow-lg shadow-green-600/25 transition hover:bg-green-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-300 sm:bottom-6 sm:end-6"
     >
       <WhatsAppIcon className="w-7 h-7 text-white" />
-      <span className="absolute inset-0 rounded-full bg-green-600 animate-ping opacity-20" />
     </a>
   );
 }

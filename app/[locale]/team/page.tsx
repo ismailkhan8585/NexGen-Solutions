@@ -9,15 +9,14 @@ import { Linkedin, Github, Twitter } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = {
-  title: 'Team',
-  description: 'Meet the experts behind NexGen Solutions.',
-};
+export function generateMetadata({ params }: { params: { locale: string } }): Metadata {
+  return params.locale === 'ar' ? { title: 'الفريق', description: 'أعضاء الفريق المنشورون من نيكس جين سولوشنز.' } : { title: 'Team', description: 'Published team members from NexGen Solutions.' };
+}
 
-export default async function TeamPage() {
+export default async function TeamPage({ params }: { params: { locale: 'ar' | 'en' } }) {
   await ensurePrismaConnection();
   const members = await prisma.teamMember.findMany({
-    where: { isActive: true },
+    where: { isActive: true, NOT: { id: { startsWith: 'seed-' } } },
     orderBy: { sortOrder: 'asc' },
   });
 
@@ -28,16 +27,17 @@ export default async function TeamPage() {
         <section className="section-padding bg-surface">
           <div className="container-max">
             <div className="text-center mb-16">
-              <GradientBadge className="mb-4">Our Team</GradientBadge>
+              <GradientBadge className="mb-4">{params.locale === 'ar' ? 'الفريق' : 'Team'}</GradientBadge>
               <h1 className="font-display font-bold text-4xl sm:text-5xl text-white mb-4">
-                The Team Behind the Magic
+                {params.locale === 'ar' ? 'أعضاء الفريق المنشورون' : 'Published team members'}
               </h1>
               <p className="text-ink-secondary text-lg max-w-2xl mx-auto">
-                Meet the experts who bring your vision to life
+                {params.locale === 'ar' ? 'لا نعرض أسماء أو صوراً إلا بعد اعتماد نشرها.' : 'Names and photos are shown only after publication is approved.'}
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {members.length === 0 && <div className="col-span-full rounded-2xl border border-dashed border-surface-border bg-surface-card p-10 text-center text-ink-secondary">{params.locale === 'ar' ? 'لا يوجد أعضاء فريق معتمدون للنشر حالياً.' : 'No team members are currently approved for publication.'}</div>}
               {members.map((member) => (
                 <div key={member.id} className="group relative rounded-2xl overflow-hidden bg-surface-card border border-surface-border hover:border-surface-borderHover transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-brand-purple-500/20">
                   <div className="relative aspect-[4/5] overflow-hidden">
@@ -64,9 +64,9 @@ export default async function TeamPage() {
                     </div>
                   </div>
                   <div className="p-5">
-                    <h3 className="font-display font-semibold text-white text-lg mb-1">{member.nameEn}</h3>
-                    <p className="text-brand-purple-400 text-sm mb-3">{member.role}</p>
-                    <p className="text-ink-secondary text-xs leading-relaxed mb-4">{member.bio}</p>
+                    <h3 className="font-display font-semibold text-white text-lg mb-1">{params.locale === 'ar' ? member.nameAr ?? member.nameEn : member.nameEn}</h3>
+                    <p className="text-brand-purple-400 text-sm mb-3">{params.locale === 'ar' ? member.roleAr ?? member.role : member.role}</p>
+                    {(params.locale === 'ar' ? member.bioAr : member.bio) && <p className="text-ink-secondary text-xs leading-relaxed mb-4">{params.locale === 'ar' ? member.bioAr : member.bio}</p>}
                     <div className="flex flex-wrap gap-1.5">
                       {member.skills.slice(0, 4).map((skill) => (
                         <span key={skill} className="px-2 py-0.5 rounded-md bg-surface-hover border border-surface-border text-xs font-mono text-ink-secondary">{skill}</span>

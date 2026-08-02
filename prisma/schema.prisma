@@ -55,6 +55,7 @@ model Admin {
   loginAttempts Int       @default(0)
   lockedUntil   DateTime?
   createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now()) @updatedAt
 }
 
 model Project {
@@ -79,6 +80,7 @@ model Project {
   isActive      Boolean         @default(true)
   completedAt   DateTime?
   createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @default(now()) @updatedAt
   testimonials  Testimonial[]
 }
 
@@ -95,6 +97,20 @@ model Service {
   techStack     String[]
   isActive      Boolean  @default(true)
   sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
+}
+
+model FAQ {
+  id        String   @id @default(cuid())
+  questionEn String
+  questionAr String?
+  answerEn  String   @db.Text
+  answerAr  String?  @db.Text
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model TeamMember {
@@ -112,6 +128,8 @@ model TeamMember {
   skills      String[]
   sortOrder   Int      @default(0)
   isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
 }
 
 model BlogPost {
@@ -131,6 +149,7 @@ model BlogPost {
   publishedAt DateTime?
   views       Int          @default(0)
   createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @default(now()) @updatedAt
 }
 
 model Testimonial {
@@ -148,6 +167,7 @@ model Testimonial {
   isApproved    Boolean  @default(true)
   isFeatured    Boolean  @default(false)
   createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
 }
 
 model ProjectInquiry {
@@ -165,6 +185,9 @@ model ProjectInquiry {
   adminNotes  String?        @db.Text
   isRead      Boolean       @default(false)
   source      String?
+  preferredLanguage String?
+  consentAt   DateTime?
+  estimatorData Json?
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 }
@@ -190,9 +213,9 @@ model SiteSettings {
   githubUrl       String?
   twitterUrl      String?
   instagramUrl    String?
-  totalProjects   Int      @default(100)
-  totalClients    Int      @default(50)
-  totalCountries  Int      @default(10)
-  yearsExperience Int      @default(5)
+  totalProjects   Int      @default(0)
+  totalClients    Int      @default(0)
+  totalCountries  Int      @default(0)
+  yearsExperience Int      @default(0)
   updatedAt       DateTime @updatedAt
 }

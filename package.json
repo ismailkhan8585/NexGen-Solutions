@@ -12,6 +12,7 @@
     "seed": "tsx prisma/seed.ts",
     "db:push": "prisma db push",
     "db:generate": "prisma generate"
+    ,"db:migrate:deploy": "prisma migrate deploy"
   },
   "dependencies": {
     "@netlify/plugin-nextjs": "^5.15.1",
@@ -60,7 +61,7 @@
     "next": "13.5.11",
     "next-auth": "^4.24.15",
     "next-themes": "^0.3.0",
-    "postcss": "8.4.30",
+    "postcss": "8.5.25",
     "prisma": "^5.22.0",
     "react": "18.2.0",
     "react-day-picker": "^8.10.1",
@@ -75,5 +76,10 @@
     "tailwindcss-animate": "^1.0.7",
     "typescript": "5.2.2",
     "vaul": "^0.9.9"
+  },
+  "overrides": {
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": "9.0.9"
+    }
   }
 }

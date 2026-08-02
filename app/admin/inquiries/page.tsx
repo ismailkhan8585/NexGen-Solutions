@@ -14,6 +14,9 @@ interface Inquiry {
   budget: string | null;
   timeline: string | null;
   description: string;
+  preferredLanguage: string | null;
+  consentAt: string | null;
+  estimatorData: { summary?: string } | null;
   status: string;
   createdAt: string;
 }
@@ -148,6 +151,9 @@ export default function InquiriesPage() {
               <div><span className="text-ink-muted">Service:</span> <span className="text-white">{selected.service}</span></div>
               {selected.budget && <div><span className="text-ink-muted">Budget:</span> <span className="text-white">{selected.budget}</span></div>}
               {selected.timeline && <div><span className="text-ink-muted">Timeline:</span> <span className="text-white">{selected.timeline}</span></div>}
+              {selected.preferredLanguage && <div><span className="text-ink-muted">Preferred language:</span> <span className="text-white">{selected.preferredLanguage === 'ar' ? 'Arabic' : 'English'}</span></div>}
+              {selected.consentAt && <div><span className="text-ink-muted">Consent recorded:</span> <span className="text-white">{new Date(selected.consentAt).toLocaleString()}</span></div>}
+              {selected.estimatorData?.summary && <div><span className="text-ink-muted">Estimator:</span> <pre className="mt-1 whitespace-pre-wrap rounded-lg bg-surface p-3 font-sans text-ink-secondary">{selected.estimatorData.summary}</pre></div>}
               <div><span className="text-ink-muted">Description:</span> <p className="text-ink-secondary mt-1">{selected.description}</p></div>
             </div>
             <div className="mt-6 flex flex-wrap gap-2">

@@ -1,0 +1,3 @@
+import { prisma } from '@/lib/prisma';
+export type ManagedFaq={id:string;questionEn:string;questionAr:string|null;answerEn:string;answerAr:string|null;sortOrder:number;isActive:boolean;createdAt:Date;updatedAt:Date};
+export function listFaqs(activeOnly=false){return activeOnly?prisma.$queryRaw<ManagedFaq[]>`SELECT "id","questionEn","questionAr","answerEn","answerAr","sortOrder","isActive","createdAt","updatedAt" FROM "FAQ" WHERE "isActive" = true ORDER BY "sortOrder" ASC`:prisma.$queryRaw<ManagedFaq[]>`SELECT "id","questionEn","questionAr","answerEn","answerAr","sortOrder","isActive","createdAt","updatedAt" FROM "FAQ" ORDER BY "sortOrder" ASC`}

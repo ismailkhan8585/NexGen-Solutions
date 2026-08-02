@@ -1,90 +1,89 @@
+import { randomBytes } from 'crypto';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import type { Prisma } from '@prisma/client';
+import { validateInquiry } from '@/lib/inquiry';
 
-const RATE_LIMIT_MAP = new Map<string, { count: number; resetTime: number }>();
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
-function checkRateLimit(ip: string): boolean {
+const limits = new Map<string, { count: number; resetAt: number }>();
+const WINDOW_MS = 10 * 60 * 1000;
+const MAX_REQUESTS = 4;
+
+function clientKey(request: Request) {
+  const forwarded = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
+  return forwarded || request.headers.get('x-real-ip') || 'unknown';
+}
+
+function isAllowed(key: string) {
   const now = Date.now();
-  const limit = RATE_LIMIT_MAP.get(ip);
-
-  if (!limit || now > limit.resetTime) {
-    RATE_LIMIT_MAP.set(ip, { count: 1, resetTime: now + 60000 });
+  const current = limits.get(key);
+  if (!current || current.resetAt <= now) {
+    limits.set(key, { count: 1, resetAt: now + WINDOW_MS });
     return true;
   }
-
-  if (limit.count >= 5) return false;
-  limit.count++;
+  if (current.count >= MAX_REQUESTS) return false;
+  current.count += 1;
   return true;
 }
 
-function generateRefNumber(): string {
-  const year = new Date().getFullYear();
-  const random = Math.floor(10000 + Math.random() * 90000);
-  return `INQ-${year}-${random}`;
+function sameOrigin(request: Request) {
+  const origin = request.headers.get('origin');
+  if (!origin) return true;
+  try { return new URL(origin).host === new URL(request.url).host; } catch { return false; }
+}
+
+async function notifyIntegration(payload: { refNumber: string; locale: string; service: string }) {
+  const url = process.env.INQUIRY_WEBHOOK_URL?.trim();
+  if (!url) return;
+  try {
+    const target = new URL(url);
+    if (target.protocol !== 'https:') return;
+    await fetch(target, {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload), signal: AbortSignal.timeout(5000), cache: 'no-store',
+    });
+  } catch {
+    // The lead is already stored. Notification failures must not expose data or fake a storage failure.
+  }
 }
 
 export async function POST(request: Request) {
+  if (!sameOrigin(request)) return NextResponse.json({ error: 'invalid_origin' }, { status: 403 });
+  if (!isAllowed(clientKey(request))) {
+    return NextResponse.json({ error: 'rate_limited' }, { status: 429, headers: { 'Retry-After': '600' } });
+  }
+
+  let body: unknown;
+  try { body = await request.json(); } catch {
+    return NextResponse.json({ error: 'invalid_request' }, { status: 400 });
+  }
+  const result = validateInquiry(body);
+  if (!result.ok) return NextResponse.json({ error: result.code, fields: result.fields }, { status: 400 });
+  const data = result.data;
+
+  // Bots commonly fill the hidden field or submit before a person can read the form.
+  if (data.website || !Number.isFinite(data.formStartedAt) || Date.now() - data.formStartedAt < 2500) {
+    return NextResponse.json({ error: 'submission_rejected' }, { status: 400 });
+  }
+
   try {
-    const ip = request.headers.get('x-forwarded-for') ?? 'unknown';
-    if (!checkRateLimit(ip)) {
-      return NextResponse.json(
-        { error: 'Too many requests. Please try again later.' },
-        { status: 429 }
-      );
-    }
-
-    const body = await request.json();
-
-    const {
-      clientName,
-      email,
-      phone,
-      company,
-      service,
-      budget,
-      timeline,
-      description,
-    } = body;
-
-    if (!clientName || !email || !service || !description) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      );
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        { error: 'Invalid email format' },
-        { status: 400 }
-      );
-    }
-
+    const refNumber = `INQ-${new Date().getFullYear()}-${randomBytes(4).toString('hex').toUpperCase()}`;
     const inquiry = await prisma.projectInquiry.create({
       data: {
-        refNumber: generateRefNumber(),
-        clientName: String(clientName).slice(0, 255),
-        email: String(email).slice(0, 255),
-        phone: phone ? String(phone).slice(0, 50) : null,
-        company: company ? String(company).slice(0, 255) : null,
-        service: String(service).slice(0, 100),
-        budget: budget ? String(budget).slice(0, 100) : null,
-        timeline: timeline ? String(timeline).slice(0, 100) : null,
-        description: String(description).slice(0, 5000),
-        source: 'website',
+        refNumber, clientName: data.clientName, email: data.email, phone: data.phone,
+        company: data.company || null, service: data.service, budget: data.budget,
+        timeline: data.timeline, description: data.description,
+        preferredLanguage: data.preferredLanguage, consentAt: new Date(),
+        estimatorData: data.estimatorData as Prisma.InputJsonValue | undefined,
+        source: `website-${data.preferredLanguage}`,
       },
+      select: { refNumber: true, preferredLanguage: true, service: true },
     });
-
-    return NextResponse.json(
-      { success: true, refNumber: inquiry.refNumber },
-      { status: 201 }
-    );
-  } catch (error) {
-    console.error('Failed to create inquiry:', error);
-    return NextResponse.json(
-      { error: 'Failed to submit inquiry' },
-      { status: 500 }
-    );
+    await notifyIntegration({ refNumber: inquiry.refNumber, locale: inquiry.preferredLanguage || 'ar', service: inquiry.service });
+    return NextResponse.json({ success: true, refNumber: inquiry.refNumber }, { status: 201 });
+  } catch {
+    return NextResponse.json({ error: 'storage_unavailable' }, { status: 503 });
   }
 }

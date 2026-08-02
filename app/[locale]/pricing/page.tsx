@@ -5,11 +5,12 @@ import { FloatingWhatsApp } from '@/components/layout/floating-whatsapp';
 import { GradientBadge } from '@/components/ui/gradient-badge';
 import { Pricing } from '@/components/sections/pricing';
 import { FAQ } from '@/components/sections/faq';
+import { ProjectEstimator } from '@/components/sections/project-estimator';
+import { ConsultationBooking } from '@/components/sections/consultation-booking';
 
-export const metadata: Metadata = {
-  title: 'Pricing',
-  description: 'Transparent pricing for web development, mobile apps, and software solutions.',
-};
+export function generateMetadata({ params }: { params: { locale: string } }): Metadata {
+  return params.locale === 'ar' ? { title: 'تقدير المشاريع', description: 'تقديرات مخصصة بالريال السعودي بعد مراجعة نطاق المشروع.' } : { title: 'Project Estimates', description: 'Custom project estimates in SAR after scope review.' };
+}
 
 export default function PricingPage() {
   return (
@@ -17,6 +18,8 @@ export default function PricingPage() {
       <Navbar />
       <main className="pt-[72px]">
         <Pricing />
+        <ProjectEstimator />
+        <ConsultationBooking />
         <FAQ />
       </main>
       <Footer />

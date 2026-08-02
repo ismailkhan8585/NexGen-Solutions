@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { ArrowRight, ExternalLink, FolderOpen } from 'lucide-react';
 import { TechPill } from '@/components/ui/tech-pill';
+import { isDemoProject } from '@/lib/projects';
 
 interface ProjectSummary {
   id: string;
@@ -19,7 +20,7 @@ interface ProjectSummary {
 
 const filters = ['all', 'WEB', 'MOBILE', 'ECOMMERCE', 'SAAS', 'AI', 'DESIGN', 'CLOUD', 'BLOCKCHAIN', 'SOFTWARE', 'MARKETING'];
 
-export function WorkBrowser({ projects, locale }: { projects: ProjectSummary[]; locale: string }) {
+export function WorkBrowser({ projects, locale }: { projects: ProjectSummary[]; locale: 'ar' | 'en' }) {
   const [filter, setFilter] = useState('all');
   const filtered = useMemo(
     () => filter === 'all' ? projects : projects.filter((project) => project.category === filter),
@@ -28,7 +29,7 @@ export function WorkBrowser({ projects, locale }: { projects: ProjectSummary[]; 
 
   return (
     <>
-      <div className="mb-10 flex gap-2 overflow-x-auto pb-2 sm:flex-wrap sm:justify-center" aria-label="Project categories">
+      <div className="mb-10 flex gap-2 overflow-x-auto pb-2 sm:flex-wrap sm:justify-center" aria-label={locale === 'ar' ? 'تصنيفات المشاريع' : 'Project categories'}>
         {filters.map((category) => (
           <button
             key={category}
@@ -41,7 +42,7 @@ export function WorkBrowser({ projects, locale }: { projects: ProjectSummary[]; 
                 : 'border border-surface-border bg-surface-card text-ink-secondary hover:border-surface-borderHover hover:text-white'
             }`}
           >
-            {category === 'all' ? 'All work' : category.replace('_', ' ')}
+            {category === 'all' ? (locale === 'ar' ? 'كل الأعمال' : 'All work') : category.replace('_', ' ')}
           </button>
         ))}
       </div>
@@ -49,8 +50,8 @@ export function WorkBrowser({ projects, locale }: { projects: ProjectSummary[]; 
       {filtered.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-surface-border bg-surface-card/60 px-6 py-16 text-center">
           <FolderOpen className="mx-auto h-10 w-10 text-brand-purple-400" />
-          <h2 className="mt-4 font-display text-xl font-semibold text-white">No projects in this category yet</h2>
-          <p className="mt-2 text-sm text-ink-muted">Choose another category or contact us for relevant private work.</p>
+          <h2 className="mt-4 font-display text-xl font-semibold text-white">{locale === 'ar' ? 'لا توجد مشاريع منشورة ضمن هذا التصنيف' : 'No projects are published in this category'}</h2>
+          <p className="mt-2 text-sm text-ink-muted">{locale === 'ar' ? 'اختر تصنيفاً آخر أو تواصل معنا لمناقشة احتياجك.' : 'Choose another category or contact us to discuss your needs.'}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -79,14 +80,15 @@ export function WorkBrowser({ projects, locale }: { projects: ProjectSummary[]; 
                 <h2 className="mt-4 font-display text-xl font-semibold text-white transition-colors group-hover:text-brand-purple-300">
                   {locale === 'ar' ? project.titleAr ?? project.titleEn : project.titleEn}
                 </h2>
+                {isDemoProject(project.liveUrl) && <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-gold-400">{locale === 'ar' ? 'مشروع تجريبي' : 'Demo Project'}</p>}
                 <div className="mt-4 flex flex-wrap gap-1.5">
                   {project.techStack.slice(0, 4).map((tech) => <TechPill key={tech}>{tech}</TechPill>)}
                 </div>
                 <div className="mt-5 flex items-center justify-between text-sm">
                   <span className="inline-flex items-center gap-1.5 font-medium text-brand-purple-400">
-                    View case study <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1 rtl:rotate-180" />
+                    {locale === 'ar' ? 'عرض دراسة الحالة' : 'View case study'} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1 rtl:rotate-180" />
                   </span>
-                  {project.liveUrl && <ExternalLink className="h-4 w-4 text-ink-muted" aria-label="Live project available" />}
+                  {project.liveUrl && !isDemoProject(project.liveUrl) && <ExternalLink className="h-4 w-4 text-ink-muted" aria-label={locale === 'ar' ? 'المشروع المباشر متاح' : 'Live project available'} />}
                 </div>
               </div>
             </Link>

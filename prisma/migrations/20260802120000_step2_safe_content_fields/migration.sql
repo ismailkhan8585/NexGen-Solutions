@@ -1,0 +1,32 @@
+-- Step 2 is additive only. Existing rows and relationships are preserved.
+ALTER TABLE "Admin" ADD COLUMN "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE "Project" ADD COLUMN "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE "Service" ADD COLUMN "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE "TeamMember" ADD COLUMN "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE "BlogPost" ADD COLUMN "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE "Testimonial" ADD COLUMN "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE "ProjectInquiry" ADD COLUMN "preferredLanguage" TEXT,
+ADD COLUMN "consentAt" TIMESTAMP(3),
+ADD COLUMN "estimatorData" JSONB;
+
+CREATE TABLE "FAQ" (
+  "id" TEXT NOT NULL,
+  "questionEn" TEXT NOT NULL,
+  "questionAr" TEXT,
+  "answerEn" TEXT NOT NULL,
+  "answerAr" TEXT,
+  "sortOrder" INTEGER NOT NULL DEFAULT 0,
+  "isActive" BOOLEAN NOT NULL DEFAULT true,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT "FAQ_pkey" PRIMARY KEY ("id")
+);
+
+-- Prevent future settings rows from receiving unverifiable statistics. Existing
+-- values are preserved for manual review; public UI does not display them.
+ALTER TABLE "SiteSettings" ALTER COLUMN "totalProjects" SET DEFAULT 0,
+ALTER COLUMN "totalClients" SET DEFAULT 0,
+ALTER COLUMN "totalCountries" SET DEFAULT 0,
+ALTER COLUMN "yearsExperience" SET DEFAULT 0;

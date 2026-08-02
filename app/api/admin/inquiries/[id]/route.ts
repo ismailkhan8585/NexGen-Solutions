@@ -31,8 +31,7 @@ export async function PATCH(
       status: updated.status,
       createdAt: updated.createdAt.toISOString(),
     });
-  } catch (error) {
-    console.error('Failed:', error);
+  } catch {
     return NextResponse.json({ error: 'Failed' }, { status: 500 });
   }
 }

@@ -6,7 +6,7 @@ import { useI18n } from '@/components/i18n-provider';
 import { LanguageToggle } from '@/components/layout/language-toggle';
 import { GradientButton } from '@/components/ui/gradient-button';
 import { WhatsAppButton } from '@/components/layout/whatsapp-button';
-import { WhatsAppIcon } from '@/components/icons/whatsapp-icon';
+import { businessConfig, getWhatsAppUrl } from '@/lib/business-config';
 import { cn } from '@/lib/utils';
 import { Menu, X } from 'lucide-react';
 
@@ -14,6 +14,7 @@ export function Navbar() {
   const { t, locale } = useI18n();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const whatsappUrl = getWhatsAppUrl(locale);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -37,12 +38,12 @@ export function Navbar() {
   }, [mobileOpen]);
 
   const navLinks = [
-    { href: `/${locale}#services`, label: t('nav.services') },
-    { href: `/${locale}#work`, label: t('nav.work') },
-    { href: `/${locale}#about`, label: t('nav.about') },
-    { href: `/${locale}#team`, label: t('nav.team') },
-    { href: `/${locale}#blog`, label: t('nav.blog') },
-    { href: `/${locale}#contact`, label: t('nav.contact') },
+    { href: `/${locale}/services`, label: t('nav.services') },
+    { href: `/${locale}/work`, label: t('nav.work') },
+    { href: `/${locale}/about`, label: t('nav.about') },
+    { href: `/${locale}/team`, label: t('nav.team') },
+    { href: `/${locale}/blog`, label: t('nav.blog') },
+    { href: `/${locale}/contact`, label: t('nav.contact') },
   ];
 
   return (
@@ -56,18 +57,11 @@ export function Navbar() {
         )}
       >
         <nav className="container-max h-full flex items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link href={`/${locale}`} className="flex items-center gap-2 shrink-0" aria-label="NexGen Solutions home">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-purple-500 to-brand-cyan-500 flex items-center justify-center font-display font-bold text-white text-lg">
+          <Link href={`/${locale}`} className="flex items-center gap-2 shrink-0" aria-label={t('common.homeLabel')}>
+            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center font-display font-bold text-surface text-lg">
               NG
             </div>
-            <div className="hidden sm:block">
-              <span className="font-display font-bold text-white text-lg leading-none">
-                NexGen
-              </span>{' '}
-              <span className="text-ink-secondary text-lg leading-none">
-                Solutions
-              </span>
-            </div>
+            <span className="hidden max-w-[180px] truncate font-display font-bold text-white sm:block">{businessConfig.companyName[locale]}</span>
           </Link>
 
           <div className="hidden lg:flex items-center gap-8">
@@ -93,18 +87,19 @@ export function Navbar() {
                 {t('nav.getQuote')}
               </GradientButton>
             </Link>
-            <a
-              href="https://wa.me/923000000000"
+            {whatsappUrl && <a
+              href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden md:inline-flex items-center justify-center w-10 h-10 rounded-xl bg-green-600 text-white hover:bg-green-500 transition-colors"
+              aria-label={t('contact.whatsapp')}
+              className="hidden md:inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-xl bg-green-600 text-white hover:bg-green-500 transition-colors"
             >
-              <WhatsAppIcon className="w-5 h-5" />
-            </a>
+              <span aria-hidden="true" className="text-sm font-bold">WA</span>
+            </a>}
             <button
               onClick={() => setMobileOpen(true)}
               className="lg:hidden inline-flex items-center justify-center w-10 h-10 rounded-xl border border-surface-border text-ink-primary"
-              aria-label="Open menu"
+              aria-label={t('common.openMenu')}
               aria-expanded={mobileOpen}
               aria-controls="mobile-navigation"
             >
@@ -122,11 +117,11 @@ export function Navbar() {
           />
           <div id="mobile-navigation" role="dialog" aria-modal="true" aria-label="Main navigation" className="absolute right-0 top-0 bottom-0 w-full max-w-sm bg-surface border-l border-surface-border p-6 flex flex-col shadow-2xl shadow-black/40 rtl:left-0 rtl:right-auto rtl:border-l-0 rtl:border-r">
             <div className="flex items-center justify-between mb-8">
-              <span className="font-display font-bold text-white text-lg">Menu</span>
+              <span className="font-display font-bold text-white text-lg">{t('common.menu')}</span>
               <button
                 onClick={() => setMobileOpen(false)}
                 className="w-10 h-10 rounded-xl border border-surface-border flex items-center justify-center text-ink-primary"
-                aria-label="Close menu"
+                aria-label={t('common.closeMenu')}
               >
                 <X className="w-5 h-5" />
               </button>

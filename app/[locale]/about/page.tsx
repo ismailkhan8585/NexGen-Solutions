@@ -1,157 +1,36 @@
 import type { Metadata } from 'next';
-import { ensurePrismaConnection, prisma } from '@/lib/prisma';
+import Link from 'next/link';
+import { Accessibility, Languages, ShieldCheck, Workflow } from 'lucide-react';
 import { Navbar } from '@/components/layout/navbar';
 import { Footer } from '@/components/layout/footer';
 import { FloatingWhatsApp } from '@/components/layout/floating-whatsapp';
-import { GradientBadge } from '@/components/ui/gradient-badge';
-import { CountUp } from '@/components/animations/count-up';
-import { FadeIn } from '@/components/animations/fade-in';
-import { Target, Eye, Heart, Award, Users, Globe, TrendingUp } from 'lucide-react';
+import { businessConfig } from '@/lib/business-config';
 
-export const dynamic = 'force-dynamic';
+export function generateMetadata({ params }: { params: { locale: 'ar' | 'en' } }): Metadata {
+  return params.locale === 'ar'
+    ? { title: 'من نحن', description: 'تعرف على منهج نيكس جين سولوشنز في تصميم وتطوير المنتجات الرقمية للأعمال في السعودية.' }
+    : { title: 'About Us', description: 'Learn how NexGen Solutions approaches digital product design and development for Saudi businesses.' };
+}
 
-export const metadata: Metadata = {
-  title: 'About Us',
-  description: 'The story behind NexGen Solutions — our mission, vision, and values.',
-};
+export default function AboutPage({ params }: { params: { locale: 'ar' | 'en' } }) {
+  const locale = params.locale;
+  const ar = locale === 'ar';
+  const values = ar ? [
+    { icon: Languages, title: 'العربية أولاً', text: 'نصمم تجربة RTL من البداية مع تجربة إنجليزية LTR متكاملة عند الحاجة.' },
+    { icon: Workflow, title: 'وضوح التنفيذ', text: 'نربط النطاق والمراحل والمراجعات بهدف واضح لكل قرار.' },
+    { icon: Accessibility, title: 'جودة قابلة للاستخدام', text: 'نراعي الأداء وسهولة الوصول والاستجابة عبر الشاشات.' },
+    { icon: ShieldCheck, title: 'ملكية واستدامة', text: 'نبني حلولاً قابلة للصيانة ونوثق القرارات المهمة للفريق.' },
+  ] : [
+    { icon: Languages, title: 'Arabic first', text: 'We design RTL from the beginning, with a complete English LTR experience when needed.' },
+    { icon: Workflow, title: 'Delivery clarity', text: 'Scope, milestones, and reviews connect every decision to a defined goal.' },
+    { icon: Accessibility, title: 'Usable quality', text: 'Performance, accessibility, and responsive behavior are considered throughout.' },
+    { icon: ShieldCheck, title: 'Ownership and longevity', text: 'Solutions are maintainable, with important decisions documented for the team.' },
+  ];
 
-const timeline = [
-  { year: '2020', title: 'Founded', desc: 'NexGen Solutions started with a vision to build world-class digital products.' },
-  { year: '2021', title: 'First 10 Clients', desc: 'Expanded across Pakistan and the Middle East with 10 successful projects.' },
-  { year: '2022', title: 'Global Expansion', desc: 'Started serving clients in UK, USA, and UAE. Team grew to 15 members.' },
-  { year: '2023', title: 'Award Recognition', desc: 'Recognized for excellence in web development and mobile app design.' },
-  { year: '2024', title: '100+ Projects', desc: 'Delivered over 100 projects across 10+ countries worldwide.' },
-  { year: '2025', title: 'AI & Future', desc: 'Expanded into AI, automation, and blockchain development services.' },
-];
-
-const values = [
-  { icon: Target, title: 'Excellence', desc: 'We strive for perfection in every line of code and every pixel.' },
-  { icon: Heart, title: 'Client First', desc: 'Our clients success is our success. We go above and beyond.' },
-  { icon: TrendingUp, title: 'Innovation', desc: 'We embrace new technologies to deliver cutting-edge solutions.' },
-  { icon: Globe, title: 'Global Mindset', desc: 'We think globally, understanding diverse markets and cultures.' },
-];
-
-export default async function AboutPage() {
-  await ensurePrismaConnection();
-  const settings = await prisma.siteSettings.findFirst();
-
-  const statsData = settings
-    ? [
-        { value: settings.totalProjects, suffix: '+', label: 'Projects Delivered', icon: Award },
-        { value: settings.totalClients, suffix: '+', label: 'Happy Clients', icon: Users },
-        { value: settings.totalCountries, suffix: '+', label: 'Countries Served', icon: Globe },
-        { value: settings.yearsExperience, suffix: '+', label: 'Years Experience', icon: TrendingUp },
-      ]
-    : [
-        { value: 100, suffix: '+', label: 'Projects Delivered', icon: Award },
-        { value: 50, suffix: '+', label: 'Happy Clients', icon: Users },
-        { value: 10, suffix: '+', label: 'Countries Served', icon: Globe },
-        { value: 5, suffix: '+', label: 'Years Experience', icon: TrendingUp },
-      ];
-
-  return (
-    <>
-      <Navbar />
-      <main className="pt-[72px]">
-        <section className="section-padding bg-surface">
-          <div className="container-max max-w-4xl">
-            <div className="text-center mb-16">
-              <GradientBadge className="mb-4">About Us</GradientBadge>
-              <h1 className="font-display font-bold text-4xl sm:text-5xl text-white mb-4">
-                About NexGen Solutions
-              </h1>
-              <p className="text-ink-secondary text-lg max-w-2xl mx-auto">
-                The story behind the code
-              </p>
-            </div>
-
-            <div className="prose prose-invert max-w-none mb-16">
-              <p className="text-ink-secondary text-lg leading-relaxed">
-                NexGen Solutions is a digital agency and technology company that builds world-class
-                websites, mobile apps, and software solutions for businesses worldwide. Founded in
-                2020, we have grown from a small team of passionate developers into a global agency
-                serving clients in over 10 countries.
-              </p>
-              <p className="text-ink-secondary text-lg leading-relaxed mt-4">
-                We believe that great software is not just about code — it is about understanding
-                business goals, designing beautiful experiences, and delivering measurable results.
-                That is why we combine technical excellence with strategic thinking to create
-                products that drive real business growth.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
-              <FadeIn>
-                <div className="bg-surface-card border border-surface-border rounded-2xl p-8">
-                  <div className="w-12 h-12 rounded-xl bg-brand-purple-500/10 flex items-center justify-center mb-4">
-                    <Target className="w-6 h-6 text-brand-purple-400" />
-                  </div>
-                  <h2 className="font-display font-semibold text-2xl text-white mb-3">Our Mission</h2>
-                  <p className="text-ink-secondary leading-relaxed">
-                    To empower businesses with world-class digital solutions that drive growth,
-                    efficiency, and innovation. We build technology that makes a difference.
-                  </p>
-                </div>
-              </FadeIn>
-              <FadeIn delay={0.1}>
-                <div className="bg-surface-card border border-surface-border rounded-2xl p-8">
-                  <div className="w-12 h-12 rounded-xl bg-brand-cyan-500/10 flex items-center justify-center mb-4">
-                    <Eye className="w-6 h-6 text-brand-cyan-400" />
-                  </div>
-                  <h2 className="font-display font-semibold text-2xl text-white mb-3">Our Vision</h2>
-                  <p className="text-ink-secondary leading-relaxed">
-                    To be the most trusted digital partner for businesses worldwide, recognized
-                    for excellence, innovation, and the measurable impact we create.
-                  </p>
-                </div>
-              </FadeIn>
-            </div>
-
-            <h2 className="font-display font-semibold text-3xl text-white mb-8">Our Values</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-16">
-              {values.map((value) => (
-                <div key={value.title} className="bg-surface-card border border-surface-border rounded-2xl p-6">
-                  <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center mb-3">
-                    <value.icon className="w-5 h-5 text-brand-purple-400" />
-                  </div>
-                  <h3 className="font-display font-semibold text-white mb-2">{value.title}</h3>
-                  <p className="text-ink-secondary text-sm leading-relaxed">{value.desc}</p>
-                </div>
-              ))}
-            </div>
-
-            <h2 className="font-display font-semibold text-3xl text-white mb-8">Our Journey</h2>
-            <div className="relative pl-8 mb-16">
-              <div className="absolute left-3 top-2 bottom-2 w-px bg-gradient-to-b from-brand-purple-500 to-brand-cyan-500" />
-              {timeline.map((item, i) => (
-                <FadeIn key={i} delay={i * 0.05}>
-                  <div className="relative mb-8">
-                    <div className="absolute -left-[22px] top-1 w-4 h-4 rounded-full bg-gradient-to-br from-brand-purple-500 to-brand-cyan-500 border-2 border-surface" />
-                    <div className="flex items-center gap-3 mb-1">
-                      <span className="font-mono font-bold text-brand-purple-400 text-lg">{item.year}</span>
-                      <h3 className="font-display font-semibold text-white">{item.title}</h3>
-                    </div>
-                    <p className="text-ink-secondary text-sm">{item.desc}</p>
-                  </div>
-                </FadeIn>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 py-12 border-t border-surface-border">
-              {statsData.map((stat, i) => (
-                <div key={i} className="text-center">
-                  <div className="font-mono font-bold text-4xl mb-2 bg-gradient-to-r from-brand-purple-400 to-brand-cyan-400 bg-clip-text text-transparent">
-                    <CountUp end={stat.value} suffix={stat.suffix} />
-                  </div>
-                  <p className="text-ink-secondary text-sm">{stat.label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      </main>
-      <Footer />
-      <FloatingWhatsApp />
-    </>
-  );
+  return <><Navbar /><main className="pt-[72px]"><section className="section-padding bg-surface"><div className="container-max max-w-5xl px-4 sm:px-6 lg:px-8">
+    <header className="max-w-3xl"><p className="text-sm font-semibold text-brand-cyan-300">{ar ? 'من نحن' : 'About us'}</p><h1 className="mt-4 font-display text-4xl font-bold leading-tight text-white sm:text-5xl">{ar ? 'نبني منتجات رقمية واضحة للأعمال في السعودية' : 'We build clear digital products for businesses in Saudi Arabia'}</h1><p className="mt-6 text-lg leading-8 text-ink-secondary">{ar ? 'نيكس جين سولوشنز شركة حلول رقمية تعمل على المواقع والتطبيقات والتجارة الإلكترونية والبرمجيات المخصصة. نبدأ بفهم العملية والمستخدم قبل اختيار التقنية.' : 'NexGen Solutions works across websites, applications, e-commerce, and custom software. We begin by understanding the operation and user before selecting technology.'}</p></header>
+    <div className="mt-14 grid gap-6 md:grid-cols-2"><section className="rounded-2xl border border-surface-border bg-surface-card p-7"><h2 className="font-display text-2xl font-semibold text-white">{ar ? 'مهمتنا' : 'Our mission'}</h2><p className="mt-4 leading-7 text-ink-secondary">{ar ? 'مساعدة الأعمال على تحويل الخدمات والعمليات إلى تجارب رقمية عربية سهلة الاستخدام وقابلة للتطوير.' : 'Help businesses turn services and operations into usable, Arabic-first digital experiences that can evolve.'}</p></section><section className="rounded-2xl border border-surface-border bg-surface-card p-7"><h2 className="font-display text-2xl font-semibold text-white">{ar ? 'طريقة عملنا' : 'How we work'}</h2><p className="mt-4 leading-7 text-ink-secondary">{ar ? 'نحدد النطاق والأولويات والمخاطر، ثم نصمم ونطور ونختبر ضمن مراحل قابلة للمراجعة.' : 'We define scope, priorities, and risks, then design, build, and test through reviewable milestones.'}</p></section></div>
+    <section className="mt-14"><h2 className="font-display text-3xl font-semibold text-white">{ar ? 'مبادئ التنفيذ' : 'Delivery principles'}</h2><div className="mt-7 grid gap-4 sm:grid-cols-2">{values.map(({ icon: Icon, title, text }) => <article key={title} className="rounded-2xl border border-surface-border bg-surface-card p-6"><Icon className="h-6 w-6 text-brand-cyan-400" /><h3 className="mt-4 font-display text-lg font-semibold text-white">{title}</h3><p className="mt-2 text-sm leading-6 text-ink-secondary">{text}</p></article>)}</div></section>
+    <section className="mt-14 rounded-3xl border border-surface-border bg-surface-card p-7 sm:p-10"><h2 className="font-display text-2xl font-semibold text-white">{ar ? 'نطاق الخدمة في المملكة' : 'Service coverage in the Kingdom'}</h2><p className="mt-4 leading-7 text-ink-secondary">{ar ? `نقدم خدماتنا للأعمال في ${businessConfig.supportedCities.ar.join('، ')} وجميع مناطق المملكة. هذا نطاق خدمة ولا يعني وجود مكاتب فعلية في هذه المدن.` : `We serve businesses in ${businessConfig.supportedCities.en.join(', ')}, and across Saudi Arabia. This is service coverage and does not imply physical offices in these cities.`}</p><Link href={`/${locale}/contact`} className="mt-6 inline-flex min-h-[48px] items-center rounded-xl bg-white px-6 py-3 font-semibold text-surface">{ar ? 'ناقش مشروعك معنا' : 'Discuss your project'}</Link></section>
+  </div></section></main><Footer /><FloatingWhatsApp /></>;
 }

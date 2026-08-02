@@ -1,158 +1,54 @@
 'use client';
 
+import Link from 'next/link';
+import { Github, Instagram, Linkedin, Mail, MapPin, Phone, Twitter } from 'lucide-react';
 import { useI18n } from '@/components/i18n-provider';
-import { GradientText } from '@/components/ui/gradient-text';
-import { COMPANY_EMAIL, WHATSAPP_URL, SOCIAL_LINKS } from '@/lib/constants';
-import { Github, Linkedin, Twitter, Instagram, Mail, Phone, Globe } from 'lucide-react';
+import { businessConfig, formatSaudiPhone, getWhatsAppUrl } from '@/lib/business-config';
 
 export function Footer() {
   const { t, locale } = useI18n();
-
+  const whatsappUrl = getWhatsAppUrl(locale);
+  const socials = [
+    { icon: Linkedin, href: businessConfig.social.linkedin, label: 'LinkedIn' },
+    { icon: Instagram, href: businessConfig.social.instagram, label: 'Instagram' },
+    { icon: Twitter, href: businessConfig.social.x, label: 'X' },
+    { icon: Github, href: businessConfig.social.github, label: 'GitHub' },
+  ].filter((item): item is typeof item & { href: string } => Boolean(item.href));
   const serviceLinks = [
-    { label: t('services.web'), href: `/${locale}#services` },
-    { label: t('services.app'), href: `/${locale}#services` },
-    { label: t('services.ecommerce'), href: `/${locale}#services` },
-    { label: t('services.ai'), href: `/${locale}#services` },
-    { label: t('services.saas'), href: `/${locale}#services` },
-  ];
-
+    ['web', 'web'], ['ecommerce', 'ecommerce'], ['app', 'app'], ['software', 'software'], ['ai', 'ai'],
+  ] as const;
   const companyLinks = [
     { label: t('footer.about'), href: `/${locale}/about` },
-    { label: t('footer.team'), href: `/${locale}/team` },
     { label: t('footer.work'), href: `/${locale}/work` },
     { label: t('footer.blog'), href: `/${locale}/blog` },
-    { label: t('footer.pricing'), href: `/${locale}/pricing` },
-  ];
-
-  const resourceLinks = [
-    { label: t('footer.blog'), href: `/${locale}/blog` },
     { label: t('footer.contact'), href: `/${locale}/contact` },
-    { label: t('footer.privacy'), href: '#' },
-    { label: t('footer.terms'), href: '#' },
   ];
-
-  const socials = [
-    { icon: Github, href: SOCIAL_LINKS.github, label: 'GitHub' },
-    { icon: Linkedin, href: SOCIAL_LINKS.linkedin, label: 'LinkedIn' },
-    { icon: Twitter, href: SOCIAL_LINKS.twitter, label: 'Twitter' },
-    { icon: Instagram, href: SOCIAL_LINKS.instagram, label: 'Instagram' },
+  const legalLinks = [
+    { href: `/${locale}/privacy-policy`, label: locale === 'ar' ? 'الخصوصية' : 'Privacy' },
+    { href: `/${locale}/terms-and-conditions`, label: locale === 'ar' ? 'الشروط' : 'Terms' },
+    { href: `/${locale}/cookie-policy`, label: locale === 'ar' ? 'ملفات الارتباط' : 'Cookies' },
+    { href: `/${locale}/refund-cancellation-policy`, label: locale === 'ar' ? 'الإلغاء والاسترداد' : 'Cancellation' },
   ];
 
   return (
-    <footer className="relative bg-surface border-t border-surface-border">
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-brand-purple-500 to-brand-cyan-500" />
-
-      <div className="container-max px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
-          <div className="col-span-2">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-purple-500 to-brand-cyan-500 flex items-center justify-center font-display font-bold text-white text-lg">
-                NG
-              </div>
-              <div>
-                <span className="font-display font-bold text-white text-lg">
-                  NexGen
-                </span>{' '}
-                <span className="text-ink-secondary text-lg">Solutions</span>
-              </div>
-            </div>
-            <p className="text-ink-secondary text-sm max-w-xs mb-4">
-              {t('footer.tagline')}
-            </p>
-            <div className="flex gap-3">
-              {socials.map((social) => (
-                <a
-                  key={social.label}
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={social.label}
-                  className="w-9 h-9 rounded-lg border border-surface-border flex items-center justify-center text-ink-secondary hover:text-white hover:border-surface-borderHover transition-colors"
-                >
-                  <social.icon className="w-4 h-4" />
-                </a>
-              ))}
-            </div>
-          </div>
-
+    <footer className="border-t border-surface-border bg-surface">
+      <div className="container-max px-4 py-14 sm:px-6 lg:px-8 lg:py-16">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
           <div>
-            <h3 className="font-display font-semibold text-white text-sm mb-4">
-              {t('footer.services')}
-            </h3>
-            <ul className="space-y-2">
-              {serviceLinks.map((link) => (
-                <li key={link.label}>
-                  <a
-                    href={link.href}
-                    className="text-ink-secondary hover:text-white text-sm transition-colors"
-                  >
-                    {link.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
+            <Link href={`/${locale}`} className="inline-flex items-center gap-3" aria-label={t('common.homeLabel')}><span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white font-display font-bold text-surface">NG</span><span className="font-display text-lg font-bold text-white">{businessConfig.companyName[locale]}</span></Link>
+            <p className="mt-4 max-w-sm text-sm leading-6 text-ink-secondary">{t('footer.tagline')}</p>
+            {socials.length > 0 && <div className="mt-5 flex gap-2">{socials.map(({ icon: Icon, href, label }) => <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label} className="flex h-11 w-11 items-center justify-center rounded-xl border border-surface-border text-ink-secondary transition hover:border-surface-borderHover hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan-400"><Icon className="h-4 w-4" /></a>)}</div>}
           </div>
-
-          <div>
-            <h3 className="font-display font-semibold text-white text-sm mb-4">
-              {t('footer.company')}
-            </h3>
-            <ul className="space-y-2">
-              {companyLinks.map((link) => (
-                <li key={link.label}>
-                  <a
-                    href={link.href}
-                    className="text-ink-secondary hover:text-white text-sm transition-colors"
-                  >
-                    {link.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="font-display font-semibold text-white text-sm mb-4">
-              {t('footer.contactCol')}
-            </h3>
-            <ul className="space-y-3">
-              <li>
-                <a
-                  href={`mailto:${COMPANY_EMAIL}`}
-                  className="flex items-center gap-2 text-ink-secondary hover:text-white text-sm transition-colors"
-                >
-                  <Mail className="w-4 h-4 shrink-0" />
-                  {COMPANY_EMAIL}
-                </a>
-              </li>
-              <li>
-                <a
-                  href={WHATSAPP_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-ink-secondary hover:text-white text-sm transition-colors"
-                >
-                  <Phone className="w-4 h-4 shrink-0" />
-                  +92 300 0000000
-                </a>
-              </li>
-              <li className="flex items-center gap-2 text-ink-secondary text-sm">
-                <Globe className="w-4 h-4 shrink-0" />
-                nexgensolutions.agency
-              </li>
-            </ul>
-          </div>
+          <div><h2 className="font-display text-sm font-semibold text-white">{t('footer.services')}</h2><ul className="mt-4 space-y-3">{serviceLinks.map(([slug, key]) => <li key={slug}><Link href={`/${locale}/services/${slug}`} className="text-sm text-ink-secondary transition hover:text-white">{t(`services.${key}`)}</Link></li>)}</ul></div>
+          <div><h2 className="font-display text-sm font-semibold text-white">{t('footer.company')}</h2><ul className="mt-4 space-y-3">{companyLinks.map((link) => <li key={link.href}><Link href={link.href} className="text-sm text-ink-secondary transition hover:text-white">{link.label}</Link></li>)}</ul></div>
+          <div><h2 className="font-display text-sm font-semibold text-white">{t('footer.contactCol')}</h2><ul className="mt-4 space-y-3 text-sm text-ink-secondary">
+            {businessConfig.businessEmail && <li><a href={`mailto:${businessConfig.businessEmail}`} className="flex items-center gap-2 hover:text-white"><Mail className="h-4 w-4 shrink-0" />{businessConfig.businessEmail}</a></li>}
+            {businessConfig.phone && <li><a href={`tel:+${businessConfig.phone.replace(/\D/g, '')}`} className="flex items-center gap-2 hover:text-white"><Phone className="h-4 w-4 shrink-0" />{formatSaudiPhone(businessConfig.phone, locale)}</a></li>}
+            {whatsappUrl && !businessConfig.phone && <li><a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-white"><Phone className="h-4 w-4 shrink-0" />{t('contact.whatsapp')}</a></li>}
+            {businessConfig.address[locale] && <li className="flex items-start gap-2"><MapPin className="mt-0.5 h-4 w-4 shrink-0" />{businessConfig.address[locale]}</li>}
+          </ul></div>
         </div>
-
-        <div className="mt-12 pt-8 border-t border-surface-border flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-ink-muted text-sm">
-            &copy; 2025 NexGen Solutions. {t('footer.rights')}
-          </p>
-          <p className="text-ink-muted text-sm">
-            {t('footer.builtWith')}{' '}
-            <GradientText className="font-display">NexGen</GradientText>
-          </p>
-        </div>
+        <div className="mt-12 flex flex-col gap-4 border-t border-surface-border pt-7 text-sm text-ink-muted lg:flex-row lg:items-center lg:justify-between"><p>&copy; {new Date().getFullYear()} {businessConfig.companyName[locale]}. {t('footer.rights')}</p><nav aria-label={locale === 'ar' ? 'الروابط القانونية' : 'Legal links'} className="flex flex-wrap gap-x-4 gap-y-2">{legalLinks.map(item=><Link key={item.href} href={item.href} className="hover:text-white">{item.label}</Link>)}</nav></div>
       </div>
     </footer>
   );

@@ -30,7 +30,7 @@ export function LanguageToggle({ className }: { className?: string }) {
           type="button"
           onClick={() => changeLocale(loc)}
           aria-pressed={locale === loc}
-          aria-label={loc === 'en' ? 'Switch to English' : 'Switch to Arabic'}
+          aria-label={loc === 'en' ? 'Switch to English' : 'التبديل إلى العربية'}
           className={cn(
             'px-3 py-1 text-sm font-medium rounded-full transition-all',
             locale === loc
@@ -38,7 +38,7 @@ export function LanguageToggle({ className }: { className?: string }) {
               : 'text-ink-secondary hover:text-ink-primary'
           )}
         >
-          {loc === 'en' ? 'EN' : 'عربي'}
+          {loc === 'en' ? 'English' : 'العربية'}
         </button>
       ))}
     </div>

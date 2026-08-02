@@ -9,12 +9,11 @@ import { WorkBrowser } from '@/components/work/work-browser';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export const metadata: Metadata = {
-  title: 'Our Work',
-  description: 'Explore selected digital products, platforms, and experiences built by NexGen Solutions.',
-};
+export function generateMetadata({ params }: { params: { locale: string } }): Metadata {
+  return params.locale === 'ar' ? { title: 'أعمالنا', description: 'مشاريع ودراسات حالة منشورة من نيكس جين سولوشنز.' } : { title: 'Our Work', description: 'Published projects and case studies from NexGen Solutions.' };
+}
 
-export default async function WorkPage({ params }: { params: { locale: string } }) {
+export default async function WorkPage({ params }: { params: { locale: 'ar' | 'en' } }) {
   await ensurePrismaConnection();
   const projects = await prisma.project.findMany({
     where: { isActive: true },
@@ -38,12 +37,12 @@ export default async function WorkPage({ params }: { params: { locale: string } 
         <section className="section-padding bg-surface">
           <div className="container-max">
             <div className="mx-auto mb-12 max-w-3xl text-center sm:mb-16">
-              <GradientBadge className="mb-4">Our Work</GradientBadge>
+              <GradientBadge className="mb-4">{params.locale === 'ar' ? 'أعمالنا' : 'Our Work'}</GradientBadge>
               <h1 className="font-display text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
-                Work designed to move businesses forward
+                {params.locale === 'ar' ? 'أعمال رقمية مصممة لخدمة أهداف واضحة' : 'Digital work designed around clear goals'}
               </h1>
               <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-ink-secondary sm:text-lg">
-                A selection of high-impact products built across web, mobile, AI, commerce, and cloud.
+                {params.locale === 'ar' ? 'نعرض فقط المشاريع المنشورة ونوضح المشاريع التجريبية بصراحة.' : 'Only published work is shown, and demo projects are clearly identified.'}
               </p>
             </div>
             <WorkBrowser locale={params.locale} projects={projects} />

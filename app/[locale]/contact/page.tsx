@@ -5,10 +5,9 @@ import { FloatingWhatsApp } from '@/components/layout/floating-whatsapp';
 import { Contact } from '@/components/sections/contact';
 import { FAQ } from '@/components/sections/faq';
 
-export const metadata: Metadata = {
-  title: 'Contact',
-  description: 'Get in touch with NexGen Solutions. We reply within 2 hours.',
-};
+export function generateMetadata({ params }: { params: { locale: string } }): Metadata {
+  return params.locale === 'ar' ? { title: 'تواصل معنا', description: 'أرسل تفاصيل مشروعك الرقمي إلى نيكس جين سولوشنز.' } : { title: 'Contact', description: 'Share your digital project requirements with NexGen Solutions.' };
+}
 
 export default function ContactPage() {
   return (

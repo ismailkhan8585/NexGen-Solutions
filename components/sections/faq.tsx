@@ -6,14 +6,21 @@ import { FadeIn } from '@/components/animations/fade-in';
 import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 
-export function FAQ() {
-  const { t } = useI18n();
+type ManagedFaq = { id: string; questionEn: string; questionAr: string | null; answerEn: string; answerAr: string | null };
+export function FAQ({ items = [] }: { items?: ManagedFaq[] }) {
+  const { t, locale } = useI18n();
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
-  const faqs = Array.from({ length: 8 }, (_, i) => ({
+  const translatedFallback = Array.from({ length: 8 }, (_, i) => ({
     q: t(`faq.q${i + 1}`),
     a: t(`faq.a${i + 1}`),
   }));
+  const managed = items.flatMap(item => {
+    const q = locale === 'ar' ? item.questionAr : item.questionEn;
+    const a = locale === 'ar' ? item.answerAr : item.answerEn;
+    return q && a ? [{ q, a }] : [];
+  });
+  const faqs = managed.length ? managed : translatedFallback;
 
   return (
     <section className="section-padding bg-surface relative">
@@ -34,7 +41,8 @@ export function FAQ() {
               <div className="bg-surface-card border border-surface-border rounded-2xl overflow-hidden">
                 <button
                   onClick={() => setOpenIndex(openIndex === i ? null : i)}
-                  className="w-full flex items-center justify-between p-5 text-left"
+                  className="w-full flex items-center justify-between p-5 text-start"
+                  aria-expanded={openIndex === i}
                 >
                   <span className="font-display font-medium text-white text-base">
                     {faq.q}

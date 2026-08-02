@@ -14,8 +14,7 @@ export async function GET() {
     return NextResponse.json(testimonials, {
       headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' },
     });
-  } catch (error) {
-    console.error('Failed to fetch testimonials:', error);
+  } catch {
     return NextResponse.json(
       { error: 'Failed to fetch testimonials' },
       { status: 500 }

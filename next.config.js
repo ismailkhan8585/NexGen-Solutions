@@ -1,18 +1,20 @@
 /** @type {import('next').NextConfig} */
+const developmentEval = process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : '';
 const ContentSecurityPolicy = `
   default-src 'self';
-  script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com;
-  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-  font-src 'self' https://fonts.gstatic.com data:;
+  script-src 'self' 'unsafe-inline'${developmentEval};
+  style-src 'self' 'unsafe-inline';
+  font-src 'self' data:;
   img-src 'self' blob: data: https://res.cloudinary.com https://images.unsplash.com https://images.pexels.com;
-  connect-src 'self' https://*.supabase.co https://api.cloudinary.com https://api.resend.com;
-  frame-src 'self' https://www.youtube.com https://js.stripe.com;
+  connect-src 'self';
+  frame-src 'self' https://www.youtube.com;
   object-src 'none';
   base-uri 'self';
   form-action 'self';
 `.replace(/\n/g, '');
 
 const nextConfig = {
+  ...(process.env.NEXT_DIST_DIR ? { distDir: process.env.NEXT_DIST_DIR } : {}),
   eslint: {
     ignoreDuringBuilds: false,
   },
