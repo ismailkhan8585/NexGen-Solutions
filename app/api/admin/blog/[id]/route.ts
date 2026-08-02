@@ -4,6 +4,12 @@ import { revalidatePath } from 'next/cache';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
+// This authenticated Prisma handler must only execute at request time in the
+// Node.js runtime. Keeping this explicit also prevents deployment platforms
+// from attempting to prerender or select an Edge runtime for the route.
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
