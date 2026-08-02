@@ -1,0 +1,41 @@
+import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { revalidatePath } from 'next/cache';
+import { authOptions } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  const session = await getServerSession(authOptions);
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const body = await request.json();
+  const data: Record<string, unknown> = {};
+
+  const fields = ['slug', 'titleEn', 'titleAr', 'category', 'coverImage', 'descriptionEn', 'liveUrl', 'featured', 'isActive'];
+  for (const field of fields) {
+    if (body[field] !== undefined) data[field] = body[field];
+  }
+  if (body.techStack !== undefined) data.techStack = body.techStack;
+
+  const updated = await prisma.project.update({
+    where: { id: params.id },
+    data,
+  });
+  revalidatePath('/', 'layout');
+  return NextResponse.json(updated);
+}
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: { id: string } }
+) {
+  const session = await getServerSession(authOptions);
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  await prisma.project.delete({ where: { id: params.id } });
+  revalidatePath('/', 'layout');
+  return NextResponse.json({ success: true });
+}

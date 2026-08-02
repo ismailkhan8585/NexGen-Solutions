@@ -1,0 +1,198 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  EDITOR
+}
+
+enum ProjectCategory {
+  WEB
+  MOBILE
+  ECOMMERCE
+  SAAS
+  AI
+  DESIGN
+  CLOUD
+  BLOCKCHAIN
+  SOFTWARE
+  MARKETING
+}
+
+enum BlogCategory {
+  WEB_DEV
+  MOBILE
+  AI
+  DESIGN
+  BUSINESS
+  CLOUD
+  SECURITY
+  GENERAL
+}
+
+enum InquiryStatus {
+  NEW
+  READ
+  REPLIED
+  IN_PROGRESS
+  CONVERTED
+  CLOSED
+}
+
+model Admin {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  password      String
+  role          AdminRole @default(EDITOR)
+  isActive      Boolean   @default(true)
+  loginAttempts Int       @default(0)
+  lockedUntil   DateTime?
+  createdAt     DateTime  @default(now())
+}
+
+model Project {
+  id            String          @id @default(cuid())
+  slug          String          @unique
+  titleEn       String
+  titleAr       String?
+  category      ProjectCategory
+  clientName    String?
+  clientCountry String?
+  descriptionEn String?         @db.Text
+  descriptionAr String?         @db.Text
+  challenge     String?         @db.Text
+  solution      String?         @db.Text
+  results       String?         @db.Text
+  techStack     String[]
+  photos        String[]
+  coverImage    String?
+  liveUrl       String?
+  githubUrl     String?
+  featured      Boolean         @default(false)
+  isActive      Boolean         @default(true)
+  completedAt   DateTime?
+  createdAt     DateTime        @default(now())
+  testimonials  Testimonial[]
+}
+
+model Service {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  nameEn        String
+  nameAr        String?
+  descriptionEn String?  @db.Text
+  descriptionAr String?  @db.Text
+  icon          String
+  startingPrice String?
+  features      String[]
+  techStack     String[]
+  isActive      Boolean  @default(true)
+  sortOrder     Int      @default(0)
+}
+
+model TeamMember {
+  id          String   @id @default(cuid())
+  nameEn      String
+  nameAr      String?
+  role        String
+  roleAr      String?
+  bio         String?  @db.Text
+  bioAr       String?  @db.Text
+  photo       String?
+  linkedinUrl String?
+  githubUrl   String?
+  twitterUrl  String?
+  skills      String[]
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+}
+
+model BlogPost {
+  id          String       @id @default(cuid())
+  slug        String       @unique
+  titleEn     String
+  titleAr     String?
+  excerptEn   String?      @db.Text
+  excerptAr   String?      @db.Text
+  contentEn   String?       @db.Text
+  contentAr   String?      @db.Text
+  coverImage  String?
+  category    BlogCategory
+  author      String
+  readTime    Int
+  isPublished Boolean      @default(false)
+  publishedAt DateTime?
+  views       Int          @default(0)
+  createdAt   DateTime     @default(now())
+}
+
+model Testimonial {
+  id            String   @id @default(cuid())
+  projectId     String?
+  project       Project? @relation(fields: [projectId], references: [id])
+  clientName    String
+  clientRole    String?
+  clientCompany String?
+  clientCountry String?
+  clientPhoto   String?
+  reviewEn      String   @db.Text
+  reviewAr      String?  @db.Text
+  rating        Int      @default(5)
+  isApproved    Boolean  @default(true)
+  isFeatured    Boolean  @default(false)
+  createdAt     DateTime @default(now())
+}
+
+model ProjectInquiry {
+  id          String        @id @default(cuid())
+  refNumber   String        @unique
+  clientName  String
+  email       String
+  phone       String?
+  company     String?
+  service     String
+  budget      String?
+  timeline    String?
+  description String        @db.Text
+  status      InquiryStatus @default(NEW)
+  adminNotes  String?        @db.Text
+  isRead      Boolean       @default(false)
+  source      String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model Newsletter {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model SiteSettings {
+  id              String   @id @default(cuid())
+  companyNameEn   String   @default("NexGen Solutions")
+  companyNameAr   String   @default("نيكست جن سولوشنز")
+  taglineEn       String?
+  taglineAr       String?
+  email           String
+  phone           String?
+  whatsapp        String?
+  linkedinUrl     String?
+  githubUrl       String?
+  twitterUrl      String?
+  instagramUrl    String?
+  totalProjects   Int      @default(100)
+  totalClients    Int      @default(50)
+  totalCountries  Int      @default(10)
+  yearsExperience Int      @default(5)
+  updatedAt       DateTime @updatedAt
+}
