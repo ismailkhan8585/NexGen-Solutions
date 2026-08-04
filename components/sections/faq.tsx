@@ -1,21 +1,23 @@
-'use client';
-
-import { useI18n } from '@/components/i18n-provider';
-import { GradientBadge } from '@/components/ui/gradient-badge';
-import { FadeIn } from '@/components/animations/fade-in';
 import { ChevronDown } from 'lucide-react';
-import { useState } from 'react';
+import { GradientBadge } from '@/components/ui/gradient-badge';
+import type { Locale } from '@/lib/i18n';
+import { serverTranslate } from '@/lib/server-translations';
 
-type ManagedFaq = { id: string; questionEn: string; questionAr: string | null; answerEn: string; answerAr: string | null };
-export function FAQ({ items = [] }: { items?: ManagedFaq[] }) {
-  const { t, locale } = useI18n();
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
+type ManagedFaq = {
+  id: string;
+  questionEn: string;
+  questionAr: string | null;
+  answerEn: string;
+  answerAr: string | null;
+};
 
-  const translatedFallback = Array.from({ length: 8 }, (_, i) => ({
-    q: t(`faq.q${i + 1}`),
-    a: t(`faq.a${i + 1}`),
+export function FAQ({ items = [], locale }: { items?: ManagedFaq[]; locale: Locale }) {
+  const t = (key: string) => serverTranslate(locale, key);
+  const translatedFallback = Array.from({ length: 8 }, (_, index) => ({
+    q: t(`faq.q${index + 1}`),
+    a: t(`faq.a${index + 1}`),
   }));
-  const managed = items.flatMap(item => {
+  const managed = items.flatMap((item) => {
     const q = locale === 'ar' ? item.questionAr : item.questionEn;
     const a = locale === 'ar' ? item.answerAr : item.answerEn;
     return q && a ? [{ q, a }] : [];
@@ -23,47 +25,23 @@ export function FAQ({ items = [] }: { items?: ManagedFaq[] }) {
   const faqs = managed.length ? managed : translatedFallback;
 
   return (
-    <section className="section-padding bg-surface relative">
+    <section className="section-padding relative bg-surface">
       <div className="container-max relative z-10">
-        <div className="text-center mb-16">
+        <div className="mb-16 text-center">
           <GradientBadge className="mb-4">{t('faq.badge')}</GradientBadge>
-          <h2 className="font-display font-bold text-3xl sm:text-4xl lg:text-5xl text-white mb-4">
-            {t('faq.title')}
-          </h2>
-          <p className="text-ink-secondary text-lg max-w-2xl mx-auto">
-            {t('faq.subtitle')}
-          </p>
+          <h2 className="mb-4 font-display text-3xl font-bold text-white sm:text-4xl lg:text-5xl">{t('faq.title')}</h2>
+          <p className="mx-auto max-w-2xl text-lg text-ink-secondary">{t('faq.subtitle')}</p>
         </div>
 
-        <div className="max-w-3xl mx-auto space-y-3">
-          {faqs.map((faq, i) => (
-            <FadeIn key={i} delay={i * 0.05}>
-              <div className="bg-surface-card border border-surface-border rounded-2xl overflow-hidden">
-                <button
-                  onClick={() => setOpenIndex(openIndex === i ? null : i)}
-                  className="w-full flex items-center justify-between p-5 text-start"
-                  aria-expanded={openIndex === i}
-                >
-                  <span className="font-display font-medium text-white text-base">
-                    {faq.q}
-                  </span>
-                  <ChevronDown
-                    className={`w-5 h-5 text-ink-secondary shrink-0 transition-transform ${
-                      openIndex === i ? 'rotate-180' : ''
-                    }`}
-                  />
-                </button>
-                <div
-                  className={`overflow-hidden transition-all duration-300 ${
-                    openIndex === i ? 'max-h-48' : 'max-h-0'
-                  }`}
-                >
-                  <p className="px-5 pb-5 text-ink-secondary text-sm leading-relaxed">
-                    {faq.a}
-                  </p>
-                </div>
-              </div>
-            </FadeIn>
+        <div className="mx-auto max-w-3xl space-y-3">
+          {faqs.map((faq, index) => (
+            <details key={faq.q} open={index === 0} className="group overflow-hidden rounded-2xl border border-surface-border bg-surface-card">
+              <summary className="flex min-h-[64px] cursor-pointer list-none items-center justify-between gap-4 p-5 text-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-cyan-400 [&::-webkit-details-marker]:hidden">
+                <span className="font-display text-base font-medium text-white">{faq.q}</span>
+                <ChevronDown className="h-5 w-5 shrink-0 text-ink-secondary transition-transform group-open:rotate-180" aria-hidden="true" />
+              </summary>
+              <p className="px-5 pb-5 text-sm leading-relaxed text-ink-secondary">{faq.a}</p>
+            </details>
           ))}
         </div>
       </div>

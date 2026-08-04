@@ -19,11 +19,11 @@ export function GradientButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'bg-gradient-to-r from-brand-purple-500 to-brand-cyan-500 text-white rounded-xl font-semibold',
-        'px-6 py-3 transition-all duration-200',
-        'hover:shadow-lg hover:shadow-brand-purple-500/30 hover:scale-[1.02]',
-        'active:scale-95',
-        'disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100',
+        'min-h-[44px] rounded-xl bg-white text-surface font-semibold',
+        'px-6 py-3 transition duration-200',
+        'hover:bg-cyan-50 hover:shadow-[0_16px_35px_-20px_rgba(34,211,238,.55)]',
+        'active:translate-y-px',
+        'disabled:cursor-not-allowed disabled:opacity-50',
         className
       )}
     >

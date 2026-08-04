@@ -1,6 +1,3 @@
-'use client';
-
-import { motion } from 'framer-motion';
 import type { ReactNode } from 'react';
 
 export function StaggerList({
@@ -13,18 +10,9 @@ export function StaggerList({
   stagger?: number;
 }) {
   return (
-    <motion.div
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, margin: '-50px' }}
-      variants={{
-        hidden: {},
-        visible: { transition: { staggerChildren: stagger } },
-      }}
-      className={className}
-    >
+    <div className={className} data-stagger={stagger}>
       {children}
-    </motion.div>
+    </div>
   );
 }
 
@@ -38,14 +26,8 @@ export function StaggerItem({
   y?: number;
 }) {
   return (
-    <motion.div
-      variants={{
-        hidden: { opacity: 0, y },
-        visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
-      }}
-      className={className}
-    >
+    <div className={className} data-offset={y}>
       {children}
-    </motion.div>
+    </div>
   );
 }

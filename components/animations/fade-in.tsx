@@ -1,6 +1,3 @@
-'use client';
-
-import { motion } from 'framer-motion';
 import type { ReactNode } from 'react';
 
 export function FadeIn({
@@ -15,15 +12,9 @@ export function FadeIn({
   className?: string;
 }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-50px' }}
-      transition={{ duration: 0.5, delay, ease: 'easeOut' }}
-      className={className}
-    >
+    <div className={className} data-delay={delay} data-offset={y}>
       {children}
-    </motion.div>
+    </div>
   );
 }
 
@@ -37,13 +28,8 @@ export function FadeUp({
   className?: string;
 }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay, ease: 'easeOut' }}
-      className={className}
-    >
+    <div className={className} data-delay={delay}>
       {children}
-    </motion.div>
+    </div>
   );
 }

@@ -1,20 +1,7 @@
-'use client';
-
-import { useI18n } from '@/components/i18n-provider';
 import Link from 'next/link';
-import { GradientBadge } from '@/components/ui/gradient-badge';
-import { GradientText } from '@/components/ui/gradient-text';
-import { StaggerList, StaggerItem } from '@/components/animations/stagger-list';
-import {
-  Globe, Smartphone, Palette, ShoppingCart, Settings, BrainCircuit,
-  TrendingUp, Cloud, ShieldCheck, Lightbulb, Rocket, Link2,
-  ArrowRight,
-} from 'lucide-react';
-
-const iconMap: Record<string, typeof Globe> = {
-  Globe, Smartphone, Palette, ShoppingCart, Settings, BrainCircuit,
-  TrendingUp, Cloud, ShieldCheck, Lightbulb, Rocket, Link2,
-};
+import { ArrowUpLeft, ArrowUpRight, BrainCircuit, Globe, Palette, Settings, ShoppingCart, Smartphone } from 'lucide-react';
+import { findService } from '@/lib/service-catalog';
+import type { Locale } from '@/lib/i18n';
 
 export interface ServiceData {
   id: string;
@@ -28,105 +15,53 @@ export interface ServiceData {
   techStack: string[];
 }
 
-export function Services({ services }: { services: ServiceData[] }) {
-  const { t, locale } = useI18n();
+const priority = ['business-websites', 'ecommerce', 'mobile-apps', 'custom-software', 'ui-ux', 'ai-automation'] as const;
+const icons = { 'business-websites': Globe, ecommerce: ShoppingCart, 'mobile-apps': Smartphone, 'custom-software': Settings, 'ui-ux': Palette, 'ai-automation': BrainCircuit } as const;
+const serviceLabels = {
+  'business-websites': { ar: 'تصميم وتطوير المواقع', en: 'Website Design and Development' },
+  ecommerce: { ar: 'حلول التجارة الإلكترونية', en: 'E-commerce Solutions' },
+  'mobile-apps': { ar: 'تطوير تطبيقات الجوال', en: 'Mobile App Development' },
+  'custom-software': { ar: 'برمجيات الأعمال المخصصة', en: 'Custom Business Software' },
+  'ui-ux': { ar: 'تصميم واجهات وتجربة المستخدم', en: 'UI/UX Design' },
+  'ai-automation': { ar: 'الأتمتة والتكاملات', en: 'Automation and Integrations' },
+} as const;
+
+export function Services({ services, locale }: { services: ServiceData[]; locale: Locale }) {
+  const ar = locale === 'ar';
+  const Arrow = ar ? ArrowUpLeft : ArrowUpRight;
+  const ordered = priority.map((slug) => services.find((service) => findService(service.slug)?.slug === slug)).filter((service): service is ServiceData => Boolean(service));
+  const visible = ordered.length >= 4 ? ordered : services.slice(0, 6);
 
   return (
-    <section id="services" className="section-padding bg-surface relative">
-      <div className="container-max relative z-10">
-        <div className="text-center mb-16">
-          <GradientBadge className="mb-4">{t('services.badge')}</GradientBadge>
-          <h2 className="font-display font-bold text-3xl sm:text-4xl lg:text-5xl text-white mb-4">
-            {t('services.title')}
-          </h2>
-          <p className="text-ink-secondary text-lg max-w-2xl mx-auto">
-            {t('services.subtitle')}
-          </p>
-        </div>
+    <section id="services" className="section-padding bg-surface">
+      <div className="container-max px-4 sm:px-6 lg:px-8">
+        <header className="grid gap-5 lg:grid-cols-[1fr_.75fr] lg:items-end">
+          <div><p className="section-kicker">{ar ? 'خدماتنا الأساسية' : 'Core services'}</p><h2 className="section-title mt-4">{ar ? 'حلول رقمية مبنية حول أهداف عملك' : 'Digital solutions built around your business goals.'}</h2></div>
+          <p className="max-w-2xl text-base leading-7 text-ink-secondary lg:justify-self-end">{ar ? 'نربط تجربة المستخدم والتقنية والتشغيل بنتيجة واضحة، مع نطاق يمكن مراجعته وتطويره.' : 'We connect user experience, technology, and operations to a clear outcome through a scope your team can review and evolve.'}</p>
+        </header>
 
-        <StaggerList className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {services.length === 0 && (
-            <div className="col-span-full text-center py-16 text-ink-muted text-sm">
-              {t('common.empty')}
-            </div>
-          )}
-          {services.map((service, i) => {
-            const Icon = iconMap[service.icon] ?? Globe;
-            const isPurple = i % 2 === 0;
-            return (
-              <StaggerItem key={service.id}>
-                <div
-                  className="group relative bg-surface-card border border-surface-border rounded-2xl p-6 transition-all duration-300 hover:border-surface-borderHover hover:bg-surface-hover hover:-translate-y-1"
-                  style={{ boxShadow: 'none' }}
-                >
-                  <div
-                    className="absolute left-0 top-6 bottom-6 w-1 rounded-r-full"
-                    style={{
-                      background: isPurple
-                        ? 'linear-gradient(to bottom, rgb(139 92 246), rgb(124 58 237))'
-                        : 'linear-gradient(to bottom, rgb(6 182 212), rgb(8 145 178))',
-                    }}
-                  />
-                  <div
-                    className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${
-                      isPurple
-                        ? 'bg-brand-purple-500/10'
-                        : 'bg-brand-cyan-500/10'
-                    }`}
-                  >
-                    <Icon
-                      className={`w-6 h-6 ${
-                        isPurple ? 'text-brand-purple-400' : 'text-brand-cyan-400'
-                      }`}
-                    />
-                  </div>
-                  <h3 className="font-display font-semibold text-white text-xl mb-1">
-                    {locale === 'ar' ? service.nameAr : service.nameEn}
-                  </h3>
-                  <p className="text-ink-secondary text-sm mb-4 leading-relaxed">
-                    {locale === 'ar'
-                      ? service.descriptionAr
-                      : service.descriptionEn}
-                  </p>
-                  <div className="flex flex-wrap gap-1.5 mb-4">
-                    {service.techStack.slice(0, 2).map((tech) => (
-                      <span
-                        key={tech}
-                        className="px-2 py-0.5 rounded-md bg-surface-hover border border-surface-border text-xs font-mono text-ink-secondary"
-                      >
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span />
-                    <Link
-                      href={`/${locale}/services/${service.slug}`}
-                      className={`inline-flex items-center gap-1 text-sm font-medium transition-colors ${
-                        isPurple
-                          ? 'text-brand-purple-400 hover:text-brand-purple-300'
-                          : 'text-brand-cyan-400 hover:text-brand-cyan-300'
-                      }`}
-                    >
-                      {t('services.learnMore')}
-                      <ArrowRight className="w-4 h-4" />
-                    </Link>
-                  </div>
-                </div>
-              </StaggerItem>
-            );
-          })}
-        </StaggerList>
-
-
-        <div className="text-center mt-12">
-          <Link href={`/${locale}/services`}>
-            <span className="inline-flex items-center gap-2 bg-gradient-to-r from-brand-purple-500 to-brand-cyan-500 text-white rounded-xl px-6 py-3 font-semibold hover:shadow-lg hover:shadow-brand-purple-500/30 transition-all">
-              {t('services.viewAll')}
-              <ArrowRight className="w-4 h-4" />
-            </span>
-          </Link>
-        </div>
+        {visible.length === 0 ? <div className="mt-12 rounded-3xl border border-dashed border-surface-border px-6 py-14 text-center text-sm text-ink-muted">{ar ? 'لا توجد خدمات منشورة حالياً.' : 'No services are currently published.'}</div> : (
+          <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {visible.map((service, index) => {
+              const catalog = findService(service.slug);
+              const canonicalSlug = catalog?.slug ?? service.slug;
+              const Icon = icons[canonicalSlug as keyof typeof icons] ?? Globe;
+              const name = serviceLabels[canonicalSlug as keyof typeof serviceLabels]?.[locale] ?? catalog?.name[locale] ?? (ar ? service.nameAr || service.nameEn : service.nameEn);
+              const description = catalog?.summary[locale] ?? (ar ? service.descriptionAr : service.descriptionEn);
+              const capabilities = catalog?.features[locale].slice(0, index === 0 ? 3 : 2) ?? [];
+              const featured = index === 0;
+              return (
+                <article key={service.id} className={`group relative overflow-hidden rounded-3xl border border-surface-border bg-surface-card transition duration-300 hover:-translate-y-1 hover:border-brand-cyan-500/30 ${featured ? 'md:col-span-2 lg:row-span-2 lg:min-h-[480px]' : 'min-h-[260px]'}`}>
+                  <Link href={`/${locale}/services/${service.slug}`} className="flex h-full flex-col p-6 focus-visible:outline-none sm:p-7 lg:p-8">
+                    <div className="flex items-start justify-between gap-4"><span className={`flex items-center justify-center rounded-2xl border border-brand-cyan-500/20 bg-brand-cyan-500/5 text-brand-cyan-300 ${featured ? 'h-14 w-14' : 'h-11 w-11'}`}><Icon className={featured ? 'h-7 w-7' : 'h-5 w-5'} aria-hidden="true" /></span><Arrow className="h-4 w-4 text-ink-muted transition group-hover:text-brand-cyan-300" aria-hidden="true" /></div>
+                    <div className={featured ? 'mt-auto pt-16' : 'mt-8'}><p className="text-xs font-semibold uppercase tracking-[.16em] text-ink-muted">{String(index + 1).padStart(2, '0')}</p><h3 className={`mt-3 font-display font-semibold text-white ${featured ? 'max-w-2xl text-3xl sm:text-4xl' : 'text-xl'}`}>{name}</h3><p className={`mt-3 leading-7 text-ink-secondary ${featured ? 'max-w-2xl text-base sm:text-lg' : 'text-sm'}`}>{description}</p>{capabilities.length > 0 && <ul className={`mt-6 flex flex-wrap gap-2 ${featured ? '' : 'mt-auto pt-5'}`}>{capabilities.map((capability) => <li key={capability} className="rounded-full border border-surface-border bg-surface px-3 py-1.5 text-xs text-ink-secondary">{capability}</li>)}</ul>}<span className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-brand-cyan-300">{ar ? 'اعرف المزيد' : 'Learn more'}<Arrow className="h-4 w-4" /></span></div>
+                  </Link>
+                </article>
+              );
+            })}
+          </div>
+        )}
+        <Link href={`/${locale}/services`} className="mt-8 inline-flex min-h-[48px] items-center gap-2 rounded-xl border border-surface-border px-5 font-semibold text-white transition hover:border-brand-cyan-500/40 hover:bg-surface-card">{ar ? 'استعرض جميع الخدمات' : 'View all services'}<Arrow className="h-4 w-4" /></Link>
       </div>
     </section>
   );

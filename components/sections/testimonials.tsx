@@ -1,9 +1,7 @@
-'use client';
-
-import { useI18n } from '@/components/i18n-provider';
+import { Quote, Star } from 'lucide-react';
 import { GradientBadge } from '@/components/ui/gradient-badge';
-import { StaggerList, StaggerItem } from '@/components/animations/stagger-list';
-import { Star, Quote } from 'lucide-react';
+import type { Locale } from '@/lib/i18n';
+import { serverTranslate } from '@/lib/server-translations';
 
 export interface TestimonialData {
   id: string;
@@ -15,58 +13,42 @@ export interface TestimonialData {
   rating: number;
 }
 
-export function Testimonials({ testimonials }: { testimonials: TestimonialData[] }) {
-  const { t, locale } = useI18n();
+export function Testimonials({ testimonials, locale }: { testimonials: TestimonialData[]; locale: Locale }) {
+  const t = (key: string) => serverTranslate(locale, key);
 
   return (
-    <section className="section-padding bg-surface relative">
+    <section className="section-padding relative bg-surface">
       <div className="container-max relative z-10">
-        <div className="text-center mb-16">
+        <div className="mb-16 text-center">
           <GradientBadge className="mb-4">{t('testimonials.badge')}</GradientBadge>
-          <h2 className="font-display font-bold text-3xl sm:text-4xl lg:text-5xl text-white mb-4">
-            {t('testimonials.title')}
-          </h2>
-          <p className="text-ink-secondary text-lg max-w-2xl mx-auto">
-            {t('testimonials.subtitle')}
-          </p>
+          <h2 className="mb-4 font-display text-3xl font-bold text-white sm:text-4xl lg:text-5xl">{t('testimonials.title')}</h2>
+          <p className="mx-auto max-w-2xl text-lg text-ink-secondary">{t('testimonials.subtitle')}</p>
         </div>
 
-        <StaggerList className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {testimonials.length === 0 && (
-            <div className="col-span-full rounded-2xl border border-dashed border-surface-border bg-surface-card/60 px-6 py-14 text-center">
-              <p className="font-display font-semibold text-white">{t('common.empty')}</p>
-            </div>
-          )}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {testimonials.map((testimonial) => (
-            <StaggerItem key={testimonial.id}>
-              <div className="relative bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:bg-white/[0.07] transition-all">
-                <Quote className="absolute top-4 right-4 w-10 h-10 text-brand-purple-500/20" fill="currentColor" />
-                <div className="flex gap-1 mb-4">
-                  {Array.from({ length: testimonial.rating }).map((_, i) => (
-                    <Star key={i} className="w-4 h-4 text-gold-400" fill="currentColor" />
-                  ))}
+            <article key={testimonial.id} className="relative rounded-2xl border border-white/10 bg-white/5 p-6 transition-colors hover:bg-white/[0.07]">
+              <Quote className="absolute end-4 top-4 h-10 w-10 text-brand-purple-500/20" fill="currentColor" aria-hidden="true" />
+              <div className="mb-4 flex gap-1" aria-label={`${testimonial.rating} / 5`}>
+                {Array.from({ length: testimonial.rating }).map((_, index) => <Star key={index} className="h-4 w-4 text-gold-400" fill="currentColor" />)}
+              </div>
+              <blockquote className="relative z-10 mb-6 text-sm leading-relaxed text-ink-secondary">
+                &ldquo;{locale === 'ar' ? testimonial.reviewAr : testimonial.reviewEn}&rdquo;
+              </blockquote>
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-cyan-500/15 font-display text-sm font-bold text-brand-cyan-200" aria-hidden="true">
+                  {testimonial.clientName.charAt(0)}
                 </div>
-                <p className="text-ink-secondary text-sm leading-relaxed mb-6 relative z-10">
-                  &ldquo;{locale === 'ar' ? testimonial.reviewAr : testimonial.reviewEn}&rdquo;
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-purple-500 to-brand-cyan-500 flex items-center justify-center text-white font-display font-bold text-sm">
-                    {testimonial.clientName.charAt(0)}
-                  </div>
-                  <div>
-                    <p className="text-white text-sm font-medium">
-                      {testimonial.clientName}
-                    </p>
-                    <p className="text-ink-muted text-xs">
-                      {testimonial.clientRole}
-                      {testimonial.clientCompany ? ` · ${testimonial.clientCompany}` : ''}
-                    </p>
-                  </div>
+                <div>
+                  <p className="text-sm font-medium text-white">{testimonial.clientName}</p>
+                  <p className="text-xs text-ink-muted">
+                    {testimonial.clientRole}{testimonial.clientCompany ? ` · ${testimonial.clientCompany}` : ''}
+                  </p>
                 </div>
               </div>
-            </StaggerItem>
+            </article>
           ))}
-        </StaggerList>
+        </div>
       </div>
     </section>
   );

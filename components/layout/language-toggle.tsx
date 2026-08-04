@@ -20,7 +20,7 @@ export function LanguageToggle({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        'inline-flex items-center rounded-full border border-surface-border bg-surface-card p-0.5',
+        'inline-flex min-h-[44px] items-center rounded-full border border-surface-border bg-surface p-1',
         className
       )}
     >
@@ -32,9 +32,9 @@ export function LanguageToggle({ className }: { className?: string }) {
           aria-pressed={locale === loc}
           aria-label={loc === 'en' ? 'Switch to English' : 'التبديل إلى العربية'}
           className={cn(
-            'px-3 py-1 text-sm font-medium rounded-full transition-all',
+            'min-h-[34px] rounded-full px-3 py-1 text-sm font-medium transition-colors',
             locale === loc
-              ? 'bg-gradient-to-r from-brand-purple-500 to-brand-cyan-500 text-white'
+              ? 'bg-white text-surface'
               : 'text-ink-secondary hover:text-ink-primary'
           )}
         >

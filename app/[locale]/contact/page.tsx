@@ -16,6 +16,7 @@ export async function generateMetadata(props: { params: Promise<{ locale: 'ar' |
   );
 }
 
-export default function ContactPage() {
-  return <><Navbar /><main className="pt-[72px]"><Contact /><FAQ /></main><Footer /><FloatingWhatsApp /></>;
+export default async function ContactPage(props: { params: Promise<{ locale: 'ar' | 'en' }> }) {
+  const { locale } = await props.params;
+  return <><Navbar /><main className="pt-[72px]"><Contact /><FAQ locale={locale} /></main><Footer /><FloatingWhatsApp /></>;
 }
