@@ -5,18 +5,22 @@ import { Footer } from '@/components/layout/footer';
 import { FloatingWhatsApp } from '@/components/layout/floating-whatsapp';
 import { GradientBadge } from '@/components/ui/gradient-badge';
 import { WorkBrowser } from '@/components/work/work-browser';
+import { localizedMetadata } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export function generateMetadata({ params }: { params: { locale: string } }): Metadata {
-  return params.locale === 'ar' ? { title: 'أعمالنا', description: 'مشاريع ودراسات حالة منشورة من نيكس جين سولوشنز.' } : { title: 'Our Work', description: 'Published projects and case studies from NexGen Solutions.' };
+export async function generateMetadata(props: { params: Promise<{ locale: 'ar' | 'en' }> }): Promise<Metadata> {
+  const params = await props.params;
+  const meta = params.locale === 'ar' ? { title: 'أعمالنا', description: 'مشاريع ودراسات حالة منشورة من نيكس جين سولوشنز.' } : { title: 'Our Work', description: 'Published projects and case studies from NexGen Solutions.' };
+  return localizedMetadata(params.locale, 'work', meta.title, meta.description);
 }
 
-export default async function WorkPage({ params }: { params: { locale: 'ar' | 'en' } }) {
+export default async function WorkPage(props: { params: Promise<{ locale: 'ar' | 'en' }> }) {
+  const params = await props.params;
   await ensurePrismaConnection();
   const projects = await prisma.project.findMany({
-    where: { isActive: true },
+    where: { isActive: true, isVerified: true, ...(params.locale === 'ar' ? { titleAr: { not: null } } : {}) },
     orderBy: { createdAt: 'desc' },
     select: {
       id: true,
@@ -24,6 +28,7 @@ export default async function WorkPage({ params }: { params: { locale: 'ar' | 'e
       titleEn: true,
       titleAr: true,
       category: true,
+      classification: true,
       coverImage: true,
       liveUrl: true,
       techStack: true,

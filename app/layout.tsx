@@ -4,8 +4,8 @@ import { headers } from 'next/headers';
 import { businessConfig } from '@/lib/business-config';
 import { JsonLd, organizationSchema } from '@/lib/seo';
 
-export function generateMetadata(): Metadata {
-  const locale = headers().get('x-site-locale') === 'en' ? 'en' : 'ar';
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await headers()).get('x-site-locale') === 'en' ? 'en' : 'ar';
   const isArabic = locale === 'ar';
   const title = isArabic
     ? 'نيكس جين سولوشنز | حلول رقمية للأعمال في السعودية'
@@ -35,12 +35,12 @@ export function generateMetadata(): Metadata {
   };
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const locale = headers().get('x-site-locale') === 'en' ? 'en' : 'ar';
+  const locale = (await headers()).get('x-site-locale') === 'en' ? 'en' : 'ar';
   return (
     <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'} suppressHydrationWarning>
       <body className="font-body antialiased">

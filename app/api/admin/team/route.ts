@@ -28,8 +28,9 @@ export async function POST(request: Request) {
       skills: body.skills ?? [],
       sortOrder: body.sortOrder ?? 99,
       isActive: true,
+      isVerified: false,
     },
   });
   revalidatePath('/', 'layout');
-  return NextResponse.json(created);
+  return NextResponse.json(created, { status: 201 });
 }

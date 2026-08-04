@@ -51,6 +51,8 @@ async function notifyIntegration(payload: { refNumber: string; locale: string; s
 
 export async function POST(request: Request) {
   if (!sameOrigin(request)) return NextResponse.json({ error: 'invalid_origin' }, { status: 403 });
+  const contentLength = Number(request.headers.get('content-length') || 0);
+  if (contentLength > 32_768) return NextResponse.json({ error: 'request_too_large' }, { status: 413 });
   if (!isAllowed(clientKey(request))) {
     return NextResponse.json({ error: 'rate_limited' }, { status: 429, headers: { 'Retry-After': '600' } });
   }

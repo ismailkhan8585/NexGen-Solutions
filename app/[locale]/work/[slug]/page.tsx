@@ -1,180 +1,19 @@
-import type { Metadata } from 'next';
-import Image from 'next/image';
 import { cache } from 'react';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ensurePrismaConnection, prisma } from '@/lib/prisma';
-import { Navbar } from '@/components/layout/navbar';
-import { Footer } from '@/components/layout/footer';
-import { FloatingWhatsApp } from '@/components/layout/floating-whatsapp';
-import { GradientBadge } from '@/components/ui/gradient-badge';
-import { GradientButton } from '@/components/ui/gradient-button';
-import { TechPill } from '@/components/ui/tech-pill';
-import { ArrowLeft, ExternalLink, Github, Target, Lightbulb, TrendingUp, Quote } from 'lucide-react';
-import { isDemoProject } from '@/lib/projects';
+import { ArrowLeft,ArrowRight,CheckCircle2,ExternalLink } from 'lucide-react';
+import { prisma } from '@/lib/prisma';
+import { Navbar } from '@/components/layout/navbar'; import { Footer } from '@/components/layout/footer'; import { FloatingWhatsApp } from '@/components/layout/floating-whatsapp'; import { WhatsAppButton } from '@/components/layout/whatsapp-button'; import { ProjectImage } from '@/components/media/project-image';
+import { businessConfig } from '@/lib/business-config'; import { localizedMetadata } from '@/lib/seo'; import { isDemoProject } from '@/lib/projects';
 
-export const dynamic = 'force-dynamic';
-
-const getProject = cache(async (slug: string) => {
-  await ensurePrismaConnection();
-  return prisma.project.findUnique({
-    where: { slug },
-    include: { testimonials: { where: { isApproved: true } } },
-  });
-});
-
-export async function generateMetadata({ params }: { params: { slug: string; locale: 'ar' | 'en' } }): Promise<Metadata> {
-  const project = await getProject(params.slug);
-  if (!project) return {};
-  return { title: params.locale === 'ar' ? project.titleAr ?? project.titleEn : project.titleEn, description: params.locale === 'ar' ? project.descriptionAr ?? project.descriptionEn ?? undefined : project.descriptionEn ?? undefined };
+export const dynamic='force-dynamic'; export const revalidate=0;
+const getProject=cache((slug:string)=>prisma.project.findFirst({where:{slug,isActive:true,isVerified:true},include:{testimonials:{where:{isApproved:true,isVerified:true}}}}));
+export async function generateMetadata(props:{params: Promise<{slug:string;locale:'ar'|'en'}>}) {
+  const params = await props.params;
+  const p=await getProject(params.slug);if(!p||(params.locale==='ar'&&!p.titleAr))return {};const title=params.locale==='ar'?p.titleAr!:p.titleEn;const description=params.locale==='ar'?p.descriptionAr??'':p.descriptionEn??'';return localizedMetadata(params.locale,`work/${p.slug}`,title,description)
 }
 
-export default async function CaseStudyPage({ params }: { params: { slug: string; locale: 'ar' | 'en' } }) {
-  const project = await getProject(params.slug);
-
-  if (!project || !project.isActive) notFound();
-  const ar = params.locale === 'ar';
-  const demo = isDemoProject(project.liveUrl);
-
-  const allProjects = await prisma.project.findMany({
-    where: { isActive: true },
-    orderBy: { createdAt: 'desc' },
-    select: { slug: true },
-  });
-  const currentIdx = allProjects.findIndex((p) => p.slug === params.slug);
-  const prevProject = currentIdx > 0 ? allProjects[currentIdx - 1] : null;
-  const nextProject = currentIdx < allProjects.length - 1 ? allProjects[currentIdx + 1] : null;
-
-  return (
-    <>
-      <Navbar />
-      <main className="pt-[72px]">
-        <section className="section-padding bg-surface">
-          <div className="container-max max-w-4xl">
-            <a href={`/${params.locale}/work`} className="inline-flex items-center gap-2 text-ink-secondary hover:text-white text-sm mb-8 transition-colors">
-              <ArrowLeft className="w-4 h-4 rtl:rotate-180" /> {ar ? 'كل المشاريع' : 'All Projects'}
-            </a>
-
-            <GradientBadge className="mb-4">{project.category}</GradientBadge>
-            {demo && <p className="mb-4 text-sm font-semibold uppercase tracking-wide text-gold-400">{ar ? 'مشروع تجريبي — ليس عملاً مدفوعاً لعميل' : 'Demo Project — not presented as paid client work'}</p>}
-            <h1 className="font-display font-bold text-4xl sm:text-5xl text-white mb-4">
-              {params.locale === 'ar' ? project.titleAr ?? project.titleEn : project.titleEn}
-            </h1>
-            {project.clientName && !demo && (
-              <p className="text-ink-secondary text-lg mb-8">
-                {project.clientName}{project.clientCountry ? ` · ${project.clientCountry}` : ''}
-              </p>
-            )}
-
-            {project.coverImage && (
-              <div className="relative rounded-2xl overflow-hidden mb-12 aspect-video">
-                <Image src={project.coverImage} alt={project.titleEn} fill priority sizes="(max-width: 896px) 100vw, 896px" className="object-cover" />
-              </div>
-            )}
-
-            <p className="text-ink-secondary text-lg leading-relaxed mb-12">
-              {params.locale === 'ar' ? project.descriptionAr ?? project.descriptionEn : project.descriptionEn}
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-              {project.challenge && !ar && (
-                <div className="bg-surface-card border border-surface-border rounded-2xl p-6">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Target className="w-5 h-5 text-rose-400" />
-                    <h2 className="font-display font-semibold text-white">{ar ? 'التحدي' : 'Challenge'}</h2>
-                  </div>
-                  <p className="text-ink-secondary text-sm leading-relaxed">{project.challenge}</p>
-                </div>
-              )}
-              {project.solution && !ar && (
-                <div className="bg-surface-card border border-surface-border rounded-2xl p-6">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Lightbulb className="w-5 h-5 text-brand-purple-400" />
-                    <h2 className="font-display font-semibold text-white">{ar ? 'الحل المقترح' : 'Proposed solution'}</h2>
-                  </div>
-                  <p className="text-ink-secondary text-sm leading-relaxed">{project.solution}</p>
-                </div>
-              )}
-              {project.results && !demo && !ar && (
-                <div className="bg-surface-card border border-surface-border rounded-2xl p-6">
-                  <div className="flex items-center gap-2 mb-3">
-                    <TrendingUp className="w-5 h-5 text-emerald-400" />
-                    <h2 className="font-display font-semibold text-white">{ar ? 'نتائج موثقة' : 'Verified results'}</h2>
-                  </div>
-                  <p className="text-ink-secondary text-sm leading-relaxed">{project.results}</p>
-                </div>
-              )}
-            </div>
-
-            <h2 className="font-display font-semibold text-2xl text-white mb-4">{ar ? 'التقنيات' : 'Technology stack'}</h2>
-            <div className="flex flex-wrap gap-2 mb-12">
-              {project.techStack.map((tech) => (
-                <TechPill key={tech}>{tech}</TechPill>
-              ))}
-            </div>
-
-            {project.photos.length > 1 && (
-              <>
-                <h2 className="font-display font-semibold text-2xl text-white mb-4">{ar ? 'الصور' : 'Gallery'}</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-12">
-                  {project.photos.slice(1).map((photo, i) => (
-                    <div key={photo} className="relative rounded-2xl overflow-hidden aspect-video">
-                      <Image src={photo} alt={`${project.titleEn} ${i + 2}`} fill sizes="(max-width: 640px) 100vw, 50vw" className="object-cover" />
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-
-            {project.testimonials.length > 0 && !demo && (
-              <div className="bg-surface-card border border-surface-border rounded-2xl p-8 mb-12 relative">
-                <Quote className="absolute top-4 right-4 w-10 h-10 text-brand-purple-500/20" fill="currentColor" />
-                <p className="text-ink-secondary text-lg leading-relaxed mb-4">
-                  &ldquo;{ar ? project.testimonials[0].reviewAr ?? project.testimonials[0].reviewEn : project.testimonials[0].reviewEn}&rdquo;
-                </p>
-                <p className="text-white font-medium">
-                  {project.testimonials[0].clientName}
-                  {project.testimonials[0].clientCompany ? ` · ${project.testimonials[0].clientCompany}` : ''}
-                </p>
-              </div>
-            )}
-
-            <div className="flex flex-col sm:flex-row gap-3 mb-12">
-              {project.liveUrl && !demo && (
-                <a href={project.liveUrl} target="_blank" rel="noopener noreferrer">
-                  <GradientButton className="px-6 py-3">
-                    <span className="inline-flex items-center gap-2">
-                      <ExternalLink className="w-4 h-4" /> {ar ? 'فتح المشروع' : 'Open project'}
-                    </span>
-                  </GradientButton>
-                </a>
-              )}
-              {project.githubUrl && (
-                <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 rounded-xl border border-surface-border bg-surface-card px-6 py-3 font-semibold text-ink-primary hover:bg-surface-hover transition-all">
-                  <Github className="w-4 h-4" /> {ar ? 'الشيفرة' : 'Code'}
-                </a>
-              )}
-              <a href={`/${params.locale}/contact`}>
-                <GradientButton className="px-6 py-3">{ar ? 'ناقش مشروعاً مشابهاً' : 'Discuss a similar project'}</GradientButton>
-              </a>
-            </div>
-
-            <div className="flex justify-between pt-8 border-t border-surface-border">
-              {prevProject ? (
-                <a href={`/${params.locale}/work/${prevProject.slug}`} className="inline-flex items-center gap-2 text-ink-secondary hover:text-white text-sm transition-colors">
-                  <ArrowLeft className="w-4 h-4 rtl:rotate-180" /> {ar ? 'السابق' : 'Previous'}
-                </a>
-              ) : <span />}
-              {nextProject ? (
-                <a href={`/${params.locale}/work/${nextProject.slug}`} className="inline-flex items-center gap-2 text-ink-secondary hover:text-white text-sm transition-colors">
-                  {ar ? 'التالي' : 'Next'} <ArrowLeft className="w-4 h-4 rotate-180 rtl:rotate-0" />
-                </a>
-              ) : <span />}
-            </div>
-          </div>
-        </section>
-      </main>
-      <Footer />
-      <FloatingWhatsApp />
-    </>
-  );
+export default async function CaseStudyPage(props:{params: Promise<{slug:string;locale:'ar'|'en'}>}) {
+  const params = await props.params;
+  const p=await getProject(params.slug);if(!p||(params.locale==='ar'&&!p.titleAr))notFound();const l=params.locale,ar=l==='ar',demo=p.classification==='DEMO'||isDemoProject(p.liveUrl),title=ar?p.titleAr!:p.titleEn,description=ar?p.descriptionAr:p.descriptionEn,industry=ar?p.industryAr:p.industryEn,duration=ar?p.durationAr:p.durationEn,challenge=ar?p.challengeAr:p.challengeEn??p.challenge,solution=ar?p.solutionAr:p.solutionEn??p.solution,results=ar?p.resultsAr:p.resultsEn??p.results,features=ar?p.featuresAr:p.featuresEn,images=[p.coverImage,...p.photos].filter((v,i,a):v is string=>Boolean(v)&&a.indexOf(v)===i),Arrow=ar?ArrowLeft:ArrowRight;const category=p.category.replace('_',' ');return <><Navbar/><main className="pb-16 pt-[72px]"><article><header className="border-b border-surface-border bg-surface"><div className="container-max px-4 py-14 sm:px-6 lg:px-8 lg:py-20"><nav aria-label={ar?'مسار التنقل':'Breadcrumb'} className="text-sm text-ink-muted"><Link href={`/${l}`}>{ar?'الرئيسية':'Home'}</Link><span className="mx-2">/</span><Link href={`/${l}/work`}>{ar?'الأعمال':'Work'}</Link><span className="mx-2">/</span><span aria-current="page">{title}</span></nav><div className="mt-8 grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end"><div className="max-w-4xl"><div className="flex flex-wrap gap-2"><span className="rounded-full border border-surface-border px-3 py-1 text-xs text-ink-secondary">{category}</span><span className={`rounded-full px-3 py-1 text-xs font-semibold ${demo?'bg-gold-500/15 text-gold-300':'bg-brand-cyan-500/10 text-brand-cyan-300'}`}>{demo?(ar?'مشروع تجريبي':'Demo Project'):(ar?'مشروع عميل موثّق':'Verified Client Project')}</span></div><h1 className="mt-5 font-display text-4xl font-bold leading-tight text-white sm:text-5xl">{title}</h1>{description&&<p className="mt-5 max-w-3xl text-lg leading-8 text-ink-secondary">{description}</p>}</div>{p.liveUrl&&<a href={p.liveUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-[48px] items-center gap-2 rounded-xl border border-surface-border px-5 font-semibold text-white hover:border-brand-cyan-500/40">{ar?'فتح المشروع':'Open project'}<ExternalLink className="h-4 w-4"/></a>}</div>{(industry||duration||(!demo&&p.clientName))&&<dl className="mt-9 grid gap-4 border-t border-surface-border pt-7 sm:grid-cols-3">{industry&&<div><dt className="text-xs text-ink-muted">{ar?'القطاع':'Industry'}</dt><dd className="mt-1 text-sm font-medium text-white">{industry}</dd></div>}{duration&&<div><dt className="text-xs text-ink-muted">{ar?'مدة التطوير':'Development duration'}</dt><dd className="mt-1 text-sm font-medium text-white">{duration}</dd></div>}{!demo&&p.clientName&&<div><dt className="text-xs text-ink-muted">{ar?'العميل':'Client'}</dt><dd className="mt-1 text-sm font-medium text-white">{p.clientName}</dd></div>}</dl>}</div></header>{images.length>0&&<section aria-label={ar?'صور المشروع':'Project screenshots'} className="container-max px-4 py-10 sm:px-6 lg:px-8"><div className="grid gap-5 md:grid-cols-2">{images.map((src,index)=><figure key={`${src}-${index}`} className={`relative overflow-hidden rounded-2xl border border-surface-border bg-surface-card ${index===0?'aspect-[16/9] md:col-span-2':'aspect-[4/3]'}`}><ProjectImage src={src} alt={ar?`${title} — شاشة ${index+1}`:`${title} — screen ${index+1}`} sizes={index===0?'(max-width: 1200px) 100vw, 1200px':'(max-width: 768px) 100vw, 50vw'} priority={index===0}/></figure>)}</div></section>}<div className="container-max grid gap-6 px-4 py-8 sm:px-6 lg:grid-cols-2 lg:px-8">{challenge&&<section className="rounded-2xl border border-surface-border bg-surface-card p-6"><h2 className="font-display text-2xl font-semibold text-white">{ar?'التحدي':'Challenge'}</h2><p className="mt-4 leading-8 text-ink-secondary">{challenge}</p></section>}{solution&&<section className="rounded-2xl border border-surface-border bg-surface-card p-6"><h2 className="font-display text-2xl font-semibold text-white">{ar?'الحل':'Solution'}</h2><p className="mt-4 leading-8 text-ink-secondary">{solution}</p></section>}{features.length>0&&<section className="rounded-2xl border border-surface-border bg-surface-card p-6"><h2 className="font-display text-2xl font-semibold text-white">{ar?'الميزات الرئيسية':'Main features'}</h2><ul className="mt-5 space-y-3">{features.map(item=><li key={item} className="flex gap-3 text-ink-secondary"><CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-brand-cyan-400"/>{item}</li>)}</ul></section>}{p.techStack.length>0&&<section className="rounded-2xl border border-surface-border bg-surface-card p-6"><h2 className="font-display text-2xl font-semibold text-white">{ar?'التقنيات':'Technology stack'}</h2><div className="mt-5 flex flex-wrap gap-2">{p.techStack.map(tech=><span key={tech} className="rounded-lg border border-surface-border px-3 py-2 text-sm text-ink-secondary">{tech}</span>)}</div></section>}{p.resultsVerified&&results&&<section className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-6 lg:col-span-2"><h2 className="font-display text-2xl font-semibold text-white">{ar?'نتائج موثّقة':'Verified results'}</h2><p className="mt-4 leading-8 text-ink-secondary">{results}</p></section>}</div><section className="container-max px-4 py-10 sm:px-6 lg:px-8"><div className="rounded-3xl border border-surface-border bg-surface-card p-7 sm:p-10"><h2 className="font-display text-3xl font-semibold text-white">{ar?'هل لديك مشروع مشابه؟':'Planning a similar project?'}</h2><p className="mt-3 max-w-2xl leading-7 text-ink-secondary">{ar?'ناقش المتطلبات والنطاق والمخاطر قبل اتخاذ قرار التنفيذ.':'Discuss requirements, scope, and risks before committing to delivery.'}</p><div className="mt-6 flex flex-wrap gap-3"><Link href={`/${l}/contact?service=${p.category==='MOBILE'?'app':p.category==='ECOMMERCE'?'ecommerce':'software'}`} className="inline-flex min-h-[48px] items-center gap-2 rounded-xl bg-white px-6 font-semibold text-surface">{ar?'اطلب استشارة':'Request consultation'}<Arrow className="h-4 w-4"/></Link><WhatsAppButton label={ar?'ناقش المشروع عبر واتساب':'Discuss via WhatsApp'} context={{service:title,project:ar?'أرغب في مناقشة مشروع مشابه.':'I would like to discuss a similar project.',pageUrl:`${businessConfig.appUrl}/${l}/work/${p.slug}`}}/></div></div></section></article></main><Footer/><FloatingWhatsApp/></>
 }

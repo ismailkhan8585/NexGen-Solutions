@@ -1,141 +1,25 @@
 'use client';
-
 import { useEffect, useState } from 'react';
-import { Plus, Pencil, Eye, EyeOff, X } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import { Pencil, Plus, X } from 'lucide-react';
 
-interface BlogPost {
-  id: string;
-  slug: string;
-  titleEn: string;
-  titleAr: string | null;
-  category: string;
-  isPublished: boolean;
-  author: string;
-  readTime: number;
-}
-
+type Post = { id: string; slug: string; titleEn: string; titleAr: string | null; excerptEn: string | null; excerptAr: string | null; contentEn: string | null; contentAr: string | null; category: string; isPublished: boolean; author: string; readTime: number };
 const categories = ['WEB_DEV', 'MOBILE', 'AI', 'DESIGN', 'BUSINESS', 'CLOUD', 'SECURITY', 'GENERAL'];
+const blank = { slug: '', titleEn: '', titleAr: '', excerptEn: '', excerptAr: '', contentEn: '', contentAr: '', category: 'WEB_DEV', author: '', readTime: 5, isPublished: false };
+const field = 'w-full rounded-xl border border-surface-border bg-surface px-4 py-2.5 text-sm text-white outline-none focus:border-brand-purple-500';
 
 export default function BlogAdminPage() {
-  const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [editing, setEditing] = useState<BlogPost | null>(null);
-  const [creating, setCreating] = useState(false);
-
-  useEffect(() => { loadPosts(); }, []);
-
-  async function loadPosts() {
-    const res = await fetch('/api/admin/blog');
-    if (res.ok) setPosts(await res.json());
-  }
-
-  async function togglePublish(id: string, value: boolean) {
-    await fetch(`/api/admin/blog/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isPublished: value }) });
-    loadPosts();
-  }
-
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="font-display font-bold text-2xl text-white">Blog Posts</h1>
-        <button onClick={() => setCreating(true)} className="inline-flex items-center gap-2 bg-gradient-to-r from-brand-purple-500 to-brand-cyan-500 text-white rounded-xl px-4 py-2 text-sm font-semibold hover:shadow-lg transition-all">
-          <Plus className="w-4 h-4" /> New Post
-        </button>
-      </div>
-
-      <div className="bg-surface-card border border-surface-border rounded-2xl overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-surface-border">
-                <th className="text-left p-4 text-ink-muted text-xs font-medium uppercase">Title</th>
-                <th className="text-left p-4 text-ink-muted text-xs font-medium uppercase">Category</th>
-                <th className="text-left p-4 text-ink-muted text-xs font-medium uppercase">Author</th>
-                <th className="text-left p-4 text-ink-muted text-xs font-medium uppercase">Status</th>
-                <th className="text-left p-4 text-ink-muted text-xs font-medium uppercase"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {posts.map((post) => (
-                <tr key={post.id} className="border-b border-surface-border last:border-0 hover:bg-surface-hover">
-                  <td className="p-4">
-                    <p className="text-white text-sm font-medium">{post.titleEn}</p>
-                    {post.titleAr && <p className="text-ink-muted text-xs">{post.titleAr}</p>}
-                  </td>
-                  <td className="p-4 text-ink-secondary text-sm">{post.category.replace('_', ' ')}</td>
-                  <td className="p-4 text-ink-secondary text-sm">{post.author}</td>
-                  <td className="p-4">
-                    <button onClick={() => togglePublish(post.id, !post.isPublished)} className={`px-2 py-1 rounded-full text-xs font-medium ${post.isPublished ? 'bg-emerald-500/20 text-emerald-300' : 'bg-surface-hover text-ink-muted'}`}>
-                      {post.isPublished ? 'Published' : 'Draft'}
-                    </button>
-                  </td>
-                  <td className="p-4">
-                    <button onClick={() => setEditing(post)} className="text-ink-muted hover:text-brand-purple-400"><Pencil className="w-4 h-4" /></button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {(editing || creating) && (
-        <BlogForm post={editing} onClose={() => { setEditing(null); setCreating(false); }} onSaved={() => { setEditing(null); setCreating(false); loadPosts(); }} />
-      )}
-    </div>
-  );
+  const { data: session } = useSession(); const canPublish = (session?.user as { role?: string } | undefined)?.role === 'SUPER_ADMIN';
+  const [posts, setPosts] = useState<Post[]>([]); const [editing, setEditing] = useState<Post | 'new' | null>(null); const [error, setError] = useState('');
+  async function load() { const response = await fetch('/api/admin/blog', { cache: 'no-store' }); if (response.ok) { setPosts(await response.json()); setError(''); } else setError('Blog content could not be loaded.'); }
+  useEffect(() => { load(); }, []);
+  async function toggle(post: Post) { setError(''); const response = await fetch(`/api/admin/blog/${post.id}`, { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ isPublished: !post.isPublished }) }); if (!response.ok) { setError(response.status === 403 ? 'Only a super admin can publish or unpublish content.' : 'Publication status could not be changed.'); return; } await load(); }
+  return <div><div className="mb-8 flex items-center justify-between"><div><h1 className="font-display text-2xl font-bold text-white">Blog Posts</h1><p className="mt-1 text-sm text-ink-muted">Editors can prepare bilingual drafts. Only super admins can publish.</p></div><button onClick={() => setEditing('new')} className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-brand-purple-500 to-brand-cyan-500 px-4 py-2 text-sm font-semibold text-white"><Plus className="h-4 w-4"/>New draft</button></div>{error && <p role="alert" className="mb-4 rounded-xl border border-rose-500/20 bg-rose-500/5 p-3 text-sm text-rose-300">{error}</p>}<div className="overflow-hidden rounded-2xl border border-surface-border bg-surface-card"><div className="overflow-x-auto"><table className="w-full"><thead><tr className="border-b border-surface-border text-left text-xs uppercase text-ink-muted"><th className="p-4">Title</th><th className="p-4">Category</th><th className="p-4">Author</th><th className="p-4">Status</th><th className="p-4"><span className="sr-only">Actions</span></th></tr></thead><tbody>{posts.map((post) => <tr key={post.id} className="border-b border-surface-border last:border-0"><td className="p-4"><p className="text-sm font-medium text-white">{post.titleEn}</p>{post.titleAr && <p dir="rtl" className="mt-1 text-xs text-ink-muted">{post.titleAr}</p>}</td><td className="p-4 text-sm text-ink-secondary">{post.category.replace('_', ' ')}</td><td className="p-4 text-sm text-ink-secondary">{post.author}</td><td className="p-4"><button disabled={!canPublish} onClick={() => toggle(post)} title={canPublish ? undefined : 'Super-admin access required'} className={`rounded-full px-3 py-1 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-60 ${post.isPublished ? 'bg-emerald-500/20 text-emerald-300' : 'bg-surface-hover text-ink-muted'}`}>{post.isPublished ? 'Published' : 'Draft'}</button></td><td className="p-4"><button onClick={() => setEditing(post)} aria-label={`Edit ${post.titleEn}`} className="text-ink-muted hover:text-brand-purple-400"><Pencil className="h-4 w-4"/></button></td></tr>)}</tbody></table></div></div>{editing && <BlogForm post={editing === 'new' ? null : editing} canPublish={canPublish} onClose={() => setEditing(null)} onSaved={async () => { setEditing(null); await load(); }}/>}</div>;
 }
 
-function BlogForm({ post, onClose, onSaved }: { post: BlogPost | null; onClose: () => void; onSaved: () => void }) {
-  const [form, setForm] = useState({
-    slug: post?.slug ?? '',
-    titleEn: post?.titleEn ?? '',
-    titleAr: post?.titleAr ?? '',
-    category: post?.category ?? 'WEB_DEV',
-    author: post?.author ?? '',
-    readTime: post?.readTime ?? 5,
-    excerptEn: '',
-    contentEn: '',
-    isPublished: post?.isPublished ?? false,
-  });
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (post) {
-      await fetch(`/api/admin/blog/${post.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
-    } else {
-      await fetch('/api/admin/blog', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...form, publishedAt: form.isPublished ? new Date().toISOString() : null }) });
-    }
-    onSaved();
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-surface-card border border-surface-border rounded-2xl p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-display font-semibold text-white text-lg">{post ? 'Edit Post' : 'New Post'}</h2>
-          <button onClick={onClose} className="text-ink-muted hover:text-white"><X className="w-5 h-5" /></button>
-        </div>
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <input required value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} placeholder="Slug" className="w-full rounded-xl bg-surface border border-surface-border px-4 py-2.5 text-white text-sm focus:outline-none focus:border-brand-purple-500" />
-          <input required value={form.titleEn} onChange={(e) => setForm({ ...form, titleEn: e.target.value })} placeholder="Title (English)" className="w-full rounded-xl bg-surface border border-surface-border px-4 py-2.5 text-white text-sm focus:outline-none focus:border-brand-purple-500" />
-          <input value={form.titleAr} onChange={(e) => setForm({ ...form, titleAr: e.target.value })} placeholder="Title (Arabic)" className="w-full rounded-xl bg-surface border border-surface-border px-4 py-2.5 text-white text-sm focus:outline-none focus:border-brand-purple-500" />
-          <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="w-full rounded-xl bg-surface border border-surface-border px-4 py-2.5 text-white text-sm focus:outline-none focus:border-brand-purple-500">
-            {categories.map((c) => <option key={c} value={c}>{c.replace('_', ' ')}</option>)}
-          </select>
-          <input required value={form.author} onChange={(e) => setForm({ ...form, author: e.target.value })} placeholder="Author" className="w-full rounded-xl bg-surface border border-surface-border px-4 py-2.5 text-white text-sm focus:outline-none focus:border-brand-purple-500" />
-          <input type="number" value={form.readTime} onChange={(e) => setForm({ ...form, readTime: parseInt(e.target.value) || 5 })} placeholder="Read time (min)" className="w-full rounded-xl bg-surface border border-surface-border px-4 py-2.5 text-white text-sm focus:outline-none focus:border-brand-purple-500" />
-          <textarea value={form.excerptEn} onChange={(e) => setForm({ ...form, excerptEn: e.target.value })} placeholder="Excerpt" rows={2} className="w-full rounded-xl bg-surface border border-surface-border px-4 py-2.5 text-white text-sm focus:outline-none focus:border-brand-purple-500 resize-none" />
-          <textarea value={form.contentEn} onChange={(e) => setForm({ ...form, contentEn: e.target.value })} placeholder="Content (Markdown)" rows={5} className="w-full rounded-xl bg-surface border border-surface-border px-4 py-2.5 text-white text-sm focus:outline-none focus:border-brand-purple-500 resize-none" />
-          <label className="flex items-center gap-2 text-ink-secondary text-sm">
-            <input type="checkbox" checked={form.isPublished} onChange={(e) => setForm({ ...form, isPublished: e.target.checked })} className="accent-brand-purple-500" />
-            Published
-          </label>
-          <button type="submit" className="w-full bg-gradient-to-r from-brand-purple-500 to-brand-cyan-500 text-white rounded-xl py-2.5 font-semibold text-sm hover:shadow-lg transition-all">
-            {post ? 'Update' : 'Create'}
-          </button>
-        </form>
-      </div>
-    </div>
-  );
+function BlogForm({ post, canPublish, onClose, onSaved }: { post: Post | null; canPublish: boolean; onClose: () => void; onSaved: () => void }) {
+  const [form, setForm] = useState({ ...blank, ...(post ? { ...post, titleAr: post.titleAr || '', excerptEn: post.excerptEn || '', excerptAr: post.excerptAr || '', contentEn: post.contentEn || '', contentAr: post.contentAr || '' } : {}) });
+  const [saving, setSaving] = useState(false); const [error, setError] = useState('');
+  async function submit(event: React.FormEvent) { event.preventDefault(); setSaving(true); setError(''); const response = await fetch(post ? `/api/admin/blog/${post.id}` : '/api/admin/blog', { method: post ? 'PATCH' : 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(form) }); setSaving(false); if (!response.ok) { setError(response.status === 403 ? 'Only a super admin can change publication status.' : 'The draft could not be saved. Check required fields and try again.'); return; } onSaved(); }
+  return <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 p-4"><form onSubmit={submit} className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-surface-border bg-surface-card p-6"><div className="mb-5 flex items-center justify-between"><h2 className="font-display text-xl font-semibold text-white">{post ? 'Edit post' : 'New bilingual draft'}</h2><button type="button" onClick={onClose} aria-label="Close"><X className="h-5 w-5"/></button></div><div className="grid gap-3 sm:grid-cols-2"><label className="text-sm text-ink-secondary">Slug<input required pattern="[a-z0-9-]+" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} className={`${field} mt-1`}/></label><label className="text-sm text-ink-secondary">Category<select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className={`${field} mt-1`}>{categories.map((item) => <option key={item}>{item}</option>)}</select></label><label className="text-sm text-ink-secondary">English title<input required minLength={5} value={form.titleEn} onChange={(e) => setForm({ ...form, titleEn: e.target.value })} className={`${field} mt-1`}/></label><label className="text-sm text-ink-secondary">العنوان العربي<input dir="rtl" value={form.titleAr} onChange={(e) => setForm({ ...form, titleAr: e.target.value })} className={`${field} mt-1`}/></label><label className="text-sm text-ink-secondary">Author<input required value={form.author} onChange={(e) => setForm({ ...form, author: e.target.value })} className={`${field} mt-1`}/></label><label className="text-sm text-ink-secondary">Read time (minutes)<input type="number" min="1" max="120" value={form.readTime} onChange={(e) => setForm({ ...form, readTime: Number(e.target.value) })} className={`${field} mt-1`}/></label></div><div className="mt-3 grid gap-3 sm:grid-cols-2"><label className="text-sm text-ink-secondary">English excerpt<textarea rows={3} value={form.excerptEn} onChange={(e) => setForm({ ...form, excerptEn: e.target.value })} className={`${field} mt-1`}/></label><label className="text-sm text-ink-secondary">المقتطف العربي<textarea dir="rtl" rows={3} value={form.excerptAr} onChange={(e) => setForm({ ...form, excerptAr: e.target.value })} className={`${field} mt-1`}/></label><label className="text-sm text-ink-secondary">English content (Markdown)<textarea rows={9} value={form.contentEn} onChange={(e) => setForm({ ...form, contentEn: e.target.value })} className={`${field} mt-1`}/></label><label className="text-sm text-ink-secondary">المحتوى العربي (Markdown)<textarea dir="rtl" rows={9} value={form.contentAr} onChange={(e) => setForm({ ...form, contentAr: e.target.value })} className={`${field} mt-1`}/></label></div><label className="mt-4 flex items-center gap-2 text-sm text-ink-secondary"><input type="checkbox" disabled={!canPublish} checked={form.isPublished} onChange={(e) => setForm({ ...form, isPublished: e.target.checked })}/>Published <span className="text-xs text-ink-muted">(super admin only)</span></label>{error && <p role="alert" className="mt-4 text-sm text-rose-400">{error}</p>}<button disabled={saving} className="mt-5 w-full rounded-xl bg-gradient-to-r from-brand-purple-500 to-brand-cyan-500 py-3 text-sm font-semibold text-white disabled:opacity-50">{saving ? 'Saving…' : 'Save draft'}</button></form></div>;
 }

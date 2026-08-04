@@ -13,6 +13,7 @@ interface Testimonial {
   rating: number;
   isApproved: boolean;
   isFeatured: boolean;
+  isVerified: boolean;
 }
 
 export default function TestimonialsPage() {
@@ -27,7 +28,7 @@ export default function TestimonialsPage() {
     if (res.ok) setTestimonials(await res.json());
   }
 
-  async function toggleField(id: string, field: 'isApproved' | 'isFeatured', value: boolean) {
+  async function toggleField(id: string, field: 'isApproved' | 'isFeatured' | 'isVerified', value: boolean) {
     await fetch(`/api/admin/testimonials/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ [field]: value }) });
     loadTestimonials();
   }
@@ -55,6 +56,9 @@ export default function TestimonialsPage() {
                 </button>
                 <button onClick={() => toggleField(t.id, 'isApproved', !t.isApproved)} className={`px-2 py-0.5 rounded-full text-xs ${t.isApproved ? 'bg-emerald-500/20 text-emerald-300' : 'bg-surface-hover text-ink-muted'}`}>
                   {t.isApproved ? 'Approved' : 'Hidden'}
+                </button>
+                <button onClick={() => toggleField(t.id, 'isVerified', !t.isVerified)} className={`px-2 py-0.5 rounded-full text-xs ${t.isVerified ? 'bg-cyan-500/20 text-cyan-300' : 'bg-amber-500/15 text-amber-300'}`}>
+                  {t.isVerified ? 'Verified' : 'Unverified'}
                 </button>
                 <button onClick={() => setEditing(t)} className="text-ink-muted hover:text-brand-purple-400"><Pencil className="w-4 h-4" /></button>
               </div>

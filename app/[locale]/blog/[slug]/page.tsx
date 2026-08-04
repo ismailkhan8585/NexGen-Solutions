@@ -7,9 +7,10 @@ import { Navbar } from '@/components/layout/navbar';
 import { Footer } from '@/components/layout/footer';
 import { FloatingWhatsApp } from '@/components/layout/floating-whatsapp';
 import { GradientBadge } from '@/components/ui/gradient-badge';
-import { ArrowLeft, Calendar, Clock, Share2 } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock } from 'lucide-react';
 import { businessConfig } from '@/lib/business-config';
 import { JsonLd, localizedMetadata } from '@/lib/seo';
+import { ShareArticle } from '@/components/blog/share-article';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,7 +19,8 @@ const getPost = cache(async (slug: string) => {
   return prisma.blogPost.findUnique({ where: { slug } });
 });
 
-export async function generateMetadata({ params }: { params: { slug: string; locale: 'ar' | 'en' } }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ slug: string; locale: 'ar' | 'en' }> }): Promise<Metadata> {
+  const params = await props.params;
   const post = await getPost(params.slug);
   if (!post) return {};
   const title = params.locale === 'ar' ? post.titleAr ?? post.titleEn : post.titleEn;
@@ -26,7 +28,8 @@ export async function generateMetadata({ params }: { params: { slug: string; loc
   return localizedMetadata(params.locale, `blog/${post.slug}`, title, description);
 }
 
-export default async function BlogPostPage({ params }: { params: { slug: string; locale: 'ar' | 'en' } }) {
+export default async function BlogPostPage(props: { params: Promise<{ slug: string; locale: 'ar' | 'en' }> }) {
+  const params = await props.params;
   const post = await getPost(params.slug);
   if (!post || !post.isPublished || (params.locale === 'ar' && (!post.titleAr || !post.contentAr))) notFound();
   const ar = params.locale === 'ar';
@@ -41,7 +44,10 @@ export default async function BlogPostPage({ params }: { params: { slug: string;
 
   return (
     <>
-      <JsonLd data={{'@context':'https://schema.org','@type':'Article',headline:title,description:(ar?post.excerptAr:post.excerptEn)||undefined,datePublished:post.publishedAt?.toISOString(),dateModified:post.updatedAt.toISOString(),author:{'@type':'Person',name:post.author},publisher:{'@type':'Organization',name:businessConfig.companyName[params.locale],url:businessConfig.appUrl},mainEntityOfPage:url,...(post.coverImage?{image:post.coverImage}:{})}} />
+      <JsonLd data={{'@context':'https://schema.org','@graph':[
+        {'@type':'Article',headline:title,description:(ar?post.excerptAr:post.excerptEn)||undefined,datePublished:post.publishedAt?.toISOString(),dateModified:post.updatedAt.toISOString(),author:{'@type':'Person',name:post.author},publisher:{'@type':'Organization',name:businessConfig.companyName[params.locale],url:businessConfig.appUrl},mainEntityOfPage:url,...(post.coverImage?{image:post.coverImage}:{})},
+        {'@type':'BreadcrumbList',itemListElement:[{'@type':'ListItem',position:1,name:ar?'الرئيسية':'Home',item:`${businessConfig.appUrl}/${params.locale}`},{'@type':'ListItem',position:2,name:ar?'المقالات':'Insights',item:`${businessConfig.appUrl}/${params.locale}/blog`},{'@type':'ListItem',position:3,name:title,item:url}]}
+      ]}} />
       <Navbar />
       <main className="pt-[72px]">
         <article className="section-padding bg-surface">
@@ -70,7 +76,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string;
 
             {post.coverImage && (
               <div className="relative rounded-2xl overflow-hidden mb-8 aspect-video">
-                <Image src={post.coverImage} alt={post.titleEn} fill priority sizes="(max-width: 768px) 100vw, 768px" className="object-cover" />
+                <Image src={post.coverImage} alt={title} fill priority sizes="(max-width: 768px) 100vw, 768px" className="object-cover" />
               </div>
             )}
 
@@ -84,11 +90,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string;
               })}
             </div>
 
-            <div className="flex items-center gap-3 mt-12 pt-8 border-t border-surface-border">
-              <button className="inline-flex items-center gap-2 rounded-xl border border-surface-border bg-surface-card px-4 py-2 text-sm text-ink-secondary hover:text-white transition-colors">
-                <Share2 className="w-4 h-4" /> {ar ? 'مشاركة' : 'Share'}
-              </button>
-            </div>
+            <div className="mt-12 border-t border-surface-border pt-8"><ShareArticle title={title} url={url} locale={params.locale}/></div>
 
             {related.length > 0 && (
               <div className="mt-16">
@@ -98,7 +100,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string;
                     <a key={rel.id} href={`/${params.locale}/blog/${rel.slug}`} className="group rounded-2xl overflow-hidden bg-surface-card border border-surface-border hover:border-surface-borderHover transition-all">
                       {rel.coverImage && (
                         <div className="relative aspect-video overflow-hidden">
-                          <Image src={rel.coverImage} alt={rel.titleEn} fill sizes="(max-width: 640px) 100vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                          <Image src={rel.coverImage} alt={params.locale === 'ar' ? rel.titleAr ?? rel.titleEn : rel.titleEn} fill sizes="(max-width: 640px) 100vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-500" />
                         </div>
                       )}
                       <div className="p-4">

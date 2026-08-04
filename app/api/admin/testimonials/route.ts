@@ -26,8 +26,9 @@ export async function POST(request: Request) {
       reviewEn: body.reviewEn,
       rating: body.rating ?? 5,
       isApproved: true,
+      isVerified: false,
     },
   });
   revalidatePath('/', 'layout');
-  return NextResponse.json(created);
+  return NextResponse.json(created, { status: 201 });
 }

@@ -81,15 +81,15 @@ export function Services({ services }: { services: ServiceData[] }) {
                     />
                   </div>
                   <h3 className="font-display font-semibold text-white text-xl mb-1">
-                    {locale === 'ar' ? service.nameAr ?? service.nameEn : service.nameEn}
+                    {locale === 'ar' ? service.nameAr : service.nameEn}
                   </h3>
                   <p className="text-ink-secondary text-sm mb-4 leading-relaxed">
                     {locale === 'ar'
-                      ? service.descriptionAr ?? service.descriptionEn
+                      ? service.descriptionAr
                       : service.descriptionEn}
                   </p>
                   <div className="flex flex-wrap gap-1.5 mb-4">
-                    {service.techStack.slice(0, 4).map((tech) => (
+                    {service.techStack.slice(0, 2).map((tech) => (
                       <span
                         key={tech}
                         className="px-2 py-0.5 rounded-md bg-surface-hover border border-surface-border text-xs font-mono text-ink-secondary"
@@ -99,11 +99,7 @@ export function Services({ services }: { services: ServiceData[] }) {
                     ))}
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-ink-muted text-sm">
-                      {service.techStack.length > 0
-                        ? `${service.techStack.length} ${locale === 'ar' ? 'تقنيات' : 'technologies'}`
-                        : ''}
-                    </span>
+                    <span />
                     <Link
                       href={`/${locale}/services/${service.slug}`}
                       className={`inline-flex items-center gap-1 text-sm font-medium transition-colors ${

@@ -14,10 +14,28 @@ export function ProjectEstimator() {
   const [value, setValue] = useState(initial);
   const estimate = useMemo(() => calculateEstimate(value), [value]);
   const typeLabel = estimatorConfig.projectTypes[value.projectType].label[locale];
-  const summary = ar ? `طلب تقدير مشروع\nنوع المشروع: ${typeLabel}\nالصفحات/الشاشات: ${value.units}\nالنطاق التقديري غير الملزم: ${formatSar(estimate.min, locale)} – ${formatSar(estimate.max, locale)}` : `Project estimate request\nProject type: ${typeLabel}\nPages/screens: ${value.units}\nNon-binding estimated range: ${formatSar(estimate.min, locale)} – ${formatSar(estimate.max, locale)}`;
+  const complexityLabel = estimatorConfig.complexity[value.complexity].label[locale];
+  const timelineLabel = estimatorConfig.timeline[value.timeline].label[locale];
+  const yesNo = (enabled: boolean) => enabled ? (ar ? 'نعم' : 'Yes') : (ar ? 'لا' : 'No');
+  const summaryLines = ar ? [
+    'طلب تقدير مشروع', `نوع المشروع: ${typeLabel}`, `الصفحات/الشاشات: ${value.units}`,
+    `تعقيد التصميم: ${complexityLabel}`, `دعم العربية والإنجليزية: ${yesNo(value.bilingual)}`,
+    `التجارة الإلكترونية: ${yesNo(value.ecommerce)}`, `المصادقة: ${yesNo(value.authentication)}`,
+    `لوحة الإدارة: ${yesNo(value.adminDashboard)}`, `تكامل الدفع: ${yesNo(value.payments)}`,
+    `التكاملات الخارجية: ${value.integrations}`, `المدة المطلوبة: ${timelineLabel}`,
+    `النطاق التقديري غير الملزم: ${formatSar(estimate.min, locale)} – ${formatSar(estimate.max, locale)}`,
+  ] : [
+    'Project estimate request', `Project type: ${typeLabel}`, `Pages/screens: ${value.units}`,
+    `Design complexity: ${complexityLabel}`, `Arabic and English support: ${yesNo(value.bilingual)}`,
+    `E-commerce: ${yesNo(value.ecommerce)}`, `Authentication: ${yesNo(value.authentication)}`,
+    `Admin dashboard: ${yesNo(value.adminDashboard)}`, `Payment integration: ${yesNo(value.payments)}`,
+    `Third-party integrations: ${value.integrations}`, `Required timeline: ${timelineLabel}`,
+    `Non-binding estimated range: ${formatSar(estimate.min, locale)} – ${formatSar(estimate.max, locale)}`,
+  ];
+  const summary = summaryLines.join('\n');
   const whatsapp = getWhatsAppUrl(locale, { service: typeLabel, project: summary });
   const service = value.projectType === 'mobile' ? 'app' : value.projectType === 'website' ? 'web' : value.projectType;
-  const query = new URLSearchParams({ service, estimate: summary }).toString();
+  const query = new URLSearchParams({ service, estimate: summary, estimateRange: `${formatSar(estimate.min, locale)} – ${formatSar(estimate.max, locale)}` }).toString();
   const toggles: Array<[keyof Pick<EstimatorSelections, 'bilingual'|'ecommerce'|'authentication'|'adminDashboard'|'payments'>, string, string]> = [['bilingual','دعم العربية والإنجليزية','Arabic and English support'],['ecommerce','وظائف التجارة الإلكترونية','E-commerce functionality'],['authentication','تسجيل الدخول والصلاحيات','Authentication and roles'],['adminDashboard','لوحة تحكم إدارية','Admin dashboard'],['payments','تكامل الدفع','Payment integration']];
   const field = 'w-full min-h-[46px] rounded-xl border border-surface-border bg-surface px-3 text-sm text-white focus:border-brand-cyan-400 focus:outline-none focus:ring-2 focus:ring-brand-cyan-400/20';
 

@@ -6,17 +6,21 @@ import { Footer } from '@/components/layout/footer';
 import { FloatingWhatsApp } from '@/components/layout/floating-whatsapp';
 import { GradientBadge } from '@/components/ui/gradient-badge';
 import { Linkedin, Github, Twitter } from 'lucide-react';
+import { localizedMetadata } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
-export function generateMetadata({ params }: { params: { locale: string } }): Metadata {
-  return params.locale === 'ar' ? { title: 'الفريق', description: 'أعضاء الفريق المنشورون من نيكس جين سولوشنز.' } : { title: 'Team', description: 'Published team members from NexGen Solutions.' };
+export async function generateMetadata(props: { params: Promise<{ locale: 'ar' | 'en' }> }): Promise<Metadata> {
+  const params = await props.params;
+  const meta = params.locale === 'ar' ? { title: 'الفريق', description: 'أعضاء الفريق المنشورون من نيكس جين سولوشنز.' } : { title: 'Team', description: 'Published team members from NexGen Solutions.' };
+  return localizedMetadata(params.locale, 'team', meta.title, meta.description);
 }
 
-export default async function TeamPage({ params }: { params: { locale: 'ar' | 'en' } }) {
+export default async function TeamPage(props: { params: Promise<{ locale: 'ar' | 'en' }> }) {
+  const params = await props.params;
   await ensurePrismaConnection();
   const members = await prisma.teamMember.findMany({
-    where: { isActive: true, NOT: { id: { startsWith: 'seed-' } } },
+    where: { isActive: true, isVerified: true, ...(params.locale === 'ar' ? { nameAr: { not: null }, roleAr: { not: null } } : {}) },
     orderBy: { sortOrder: 'asc' },
   });
 
@@ -42,7 +46,7 @@ export default async function TeamPage({ params }: { params: { locale: 'ar' | 'e
                 <div key={member.id} className="group relative rounded-2xl overflow-hidden bg-surface-card border border-surface-border hover:border-surface-borderHover transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-brand-purple-500/20">
                   <div className="relative aspect-[4/5] overflow-hidden">
                     {member.photo && (
-                      <Image src={member.photo} alt={member.nameEn} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
+                      <Image src={member.photo} alt={params.locale === 'ar' ? member.nameAr ?? member.nameEn : member.nameEn} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/30 to-transparent" />
                     <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">

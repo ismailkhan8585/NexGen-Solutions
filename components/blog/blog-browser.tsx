@@ -77,7 +77,7 @@ export function BlogBrowser({ posts, locale }: { posts: BlogSummary[]; locale: '
         <>
           <Link href={`/${locale}/blog/${featured.slug}`} className="group mb-8 grid overflow-hidden rounded-3xl border border-surface-border bg-surface-card transition hover:border-brand-purple-500/50 md:grid-cols-2">
             <div className="relative min-h-64 overflow-hidden bg-gradient-to-br from-brand-purple-500/15 to-brand-cyan-500/10">
-              {featured.coverImage && <Image src={featured.coverImage} alt={featured.titleEn} fill priority sizes="(max-width: 768px) 100vw, 50vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />}
+              {featured.coverImage && <Image src={featured.coverImage} alt={locale === 'ar' ? featured.titleAr ?? featured.titleEn : featured.titleEn} fill priority sizes="(max-width: 768px) 100vw, 50vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />}
             </div>
             <div className="flex flex-col justify-center p-6 sm:p-8 lg:p-10">
               <span className="w-fit rounded-full bg-brand-purple-500/15 px-2.5 py-1 text-xs font-medium text-brand-purple-300">{featured.category.replace('_', ' ')}</span>
@@ -98,7 +98,7 @@ export function BlogBrowser({ posts, locale }: { posts: BlogSummary[]; locale: '
             {rest.map((post) => (
               <Link key={post.id} href={`/${locale}/blog/${post.slug}`} className="group overflow-hidden rounded-2xl border border-surface-border bg-surface-card transition-all hover:-translate-y-1 hover:border-brand-purple-500/50">
                 <div className="relative aspect-video overflow-hidden bg-gradient-to-br from-brand-purple-500/15 to-brand-cyan-500/10">
-                  {post.coverImage && <Image src={post.coverImage} alt={post.titleEn} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />}
+                  {post.coverImage && <Image src={post.coverImage} alt={locale === 'ar' ? post.titleAr ?? post.titleEn : post.titleEn} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />}
                 </div>
                 <div className="p-5 sm:p-6">
                   <span className="rounded-full bg-brand-purple-500/15 px-2.5 py-1 text-xs font-medium text-brand-purple-300">{post.category.replace('_', ' ')}</span>

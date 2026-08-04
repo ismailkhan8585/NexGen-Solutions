@@ -47,10 +47,12 @@ export function validateInquiry(value: unknown):
     consent: body.consent === true,
     website: clean(body.website, 100),
     formStartedAt: Number(body.formStartedAt),
-    estimatorData:
-      body.estimatorData && typeof body.estimatorData === 'object' && !Array.isArray(body.estimatorData)
-        ? body.estimatorData as Record<string, unknown>
-        : null,
+    estimatorData: body.estimatorData && typeof body.estimatorData === 'object' && !Array.isArray(body.estimatorData)
+      ? {
+          summary: clean((body.estimatorData as Record<string, unknown>).summary, 2000),
+          range: clean((body.estimatorData as Record<string, unknown>).range, 200),
+        }
+      : null,
   };
   const fields: Record<string, string> = {};
   if (data.clientName.length < 2) fields.clientName = 'required';
@@ -61,6 +63,7 @@ export function validateInquiry(value: unknown):
   if (!(TIMELINES as readonly string[]).includes(data.timeline)) fields.timeline = 'invalid';
   if (data.description.length < 20) fields.description = 'too_short';
   if (!data.consent) fields.consent = 'required';
+  if (!Number.isFinite(data.formStartedAt) || data.formStartedAt > Date.now() + 60_000) fields.formStartedAt = 'invalid';
   if (Object.keys(fields).length) return { ok: false, code: 'validation_failed', fields };
   return { ok: true, data };
 }

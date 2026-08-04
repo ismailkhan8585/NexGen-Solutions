@@ -5,14 +5,18 @@ import { Navbar } from '@/components/layout/navbar';
 import { Footer } from '@/components/layout/footer';
 import { FloatingWhatsApp } from '@/components/layout/floating-whatsapp';
 import { businessConfig } from '@/lib/business-config';
+import { localizedMetadata } from '@/lib/seo';
 
-export function generateMetadata({ params }: { params: { locale: 'ar' | 'en' } }): Metadata {
-  return params.locale === 'ar'
+export async function generateMetadata(props: { params: Promise<{ locale: 'ar' | 'en' }> }): Promise<Metadata> {
+  const params = await props.params;
+  const meta = params.locale === 'ar'
     ? { title: 'من نحن', description: 'تعرف على منهج نيكس جين سولوشنز في تصميم وتطوير المنتجات الرقمية للأعمال في السعودية.' }
     : { title: 'About Us', description: 'Learn how NexGen Solutions approaches digital product design and development for Saudi businesses.' };
+  return localizedMetadata(params.locale, 'about', meta.title, meta.description);
 }
 
-export default function AboutPage({ params }: { params: { locale: 'ar' | 'en' } }) {
+export default async function AboutPage(props: { params: Promise<{ locale: 'ar' | 'en' }> }) {
+  const params = await props.params;
   const locale = params.locale;
   const ar = locale === 'ar';
   const values = ar ? [

@@ -8,12 +8,14 @@ import { FloatingWhatsApp } from '@/components/layout/floating-whatsapp';
 import { deliveryProcess, findService, serviceFaqs } from '@/lib/service-catalog';
 import { localizedMetadata } from '@/lib/seo';
 
-export function generateMetadata({ params }: { params: { slug: string; locale: 'ar' | 'en' } }): Metadata {
+export async function generateMetadata(props: { params: Promise<{ slug: string; locale: 'ar' | 'en' }> }): Promise<Metadata> {
+  const params = await props.params;
   const service = findService(params.slug);
   return service ? localizedMetadata(params.locale, `services/${service.slug}`, service.name[params.locale], service.summary[params.locale]) : {};
 }
 
-export default function ServiceDetailPage({ params }: { params: { slug: string; locale: 'ar' | 'en' } }) {
+export default async function ServiceDetailPage(props: { params: Promise<{ slug: string; locale: 'ar' | 'en' }> }) {
+  const params = await props.params;
   const service = findService(params.slug);
   if (!service) notFound();
   const locale = params.locale;

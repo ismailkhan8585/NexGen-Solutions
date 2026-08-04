@@ -7,7 +7,7 @@ export async function GET() {
   try {
     await ensurePrismaConnection();
     const testimonials = await prisma.testimonial.findMany({
-      where: { isApproved: true },
+      where: { isApproved: true, isVerified: true },
       orderBy: { createdAt: 'desc' },
       take: 8,
     });

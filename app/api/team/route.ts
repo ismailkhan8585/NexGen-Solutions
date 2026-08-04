@@ -7,7 +7,7 @@ export async function GET() {
   try {
     await ensurePrismaConnection();
     const members = await prisma.teamMember.findMany({
-      where: { isActive: true },
+      where: { isActive: true, isVerified: true },
       orderBy: { sortOrder: 'asc' },
     });
     return NextResponse.json(members, {

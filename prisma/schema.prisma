@@ -45,6 +45,11 @@ enum InquiryStatus {
   CLOSED
 }
 
+enum ProjectClassification {
+  DEMO
+  CLIENT
+}
+
 model Admin {
   id            String    @id @default(cuid())
   name          String
@@ -66,11 +71,26 @@ model Project {
   category      ProjectCategory
   clientName    String?
   clientCountry String?
+  classification ProjectClassification @default(DEMO)
+  isVerified     Boolean         @default(false)
+  resultsVerified Boolean        @default(false)
+  industryEn     String?
+  industryAr     String?
   descriptionEn String?         @db.Text
   descriptionAr String?         @db.Text
   challenge     String?         @db.Text
+  challengeEn   String?         @db.Text
+  challengeAr   String?         @db.Text
   solution      String?         @db.Text
+  solutionEn    String?         @db.Text
+  solutionAr    String?         @db.Text
   results       String?         @db.Text
+  resultsEn     String?         @db.Text
+  resultsAr     String?         @db.Text
+  featuresEn    String[]        @default([])
+  featuresAr    String[]        @default([])
+  durationEn    String?
+  durationAr    String?
   techStack     String[]
   photos        String[]
   coverImage    String?
@@ -128,6 +148,7 @@ model TeamMember {
   skills      String[]
   sortOrder   Int      @default(0)
   isActive    Boolean  @default(true)
+  isVerified  Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now()) @updatedAt
 }
@@ -166,6 +187,7 @@ model Testimonial {
   rating        Int      @default(5)
   isApproved    Boolean  @default(true)
   isFeatured    Boolean  @default(false)
+  isVerified    Boolean  @default(false)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @default(now()) @updatedAt
 }

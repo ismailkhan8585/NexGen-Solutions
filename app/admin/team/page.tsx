@@ -14,6 +14,7 @@ interface TeamMember {
   photo: string | null;
   skills: string[];
   isActive: boolean;
+  isVerified: boolean;
   sortOrder: number;
 }
 
@@ -50,7 +51,7 @@ export default function TeamAdminPage() {
                   {member.skills.slice(0, 3).map((s) => <span key={s} className="px-1.5 py-0.5 rounded bg-surface-hover text-ink-muted text-xs font-mono">{s}</span>)}
                 </div>
               </div>
-              <button onClick={() => setEditing(member)} className="text-ink-muted hover:text-brand-purple-400 shrink-0"><Pencil className="w-4 h-4" /></button>
+              <div className="flex flex-col items-end gap-2"><button onClick={() => setEditing(member)} className="text-ink-muted hover:text-brand-purple-400 shrink-0"><Pencil className="w-4 h-4" /></button><button onClick={async () => { await fetch(`/api/admin/team/${member.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isVerified: !member.isVerified }) }); loadMembers(); }} className={`rounded-lg px-2 py-1 text-xs ${member.isVerified ? 'bg-cyan-500/20 text-cyan-300' : 'bg-amber-500/15 text-amber-300'}`}>{member.isVerified ? 'Verified' : 'Unverified'}</button></div>
             </div>
           </div>
         ))}

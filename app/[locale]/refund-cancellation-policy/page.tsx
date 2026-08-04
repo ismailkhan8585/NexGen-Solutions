@@ -1,2 +1,8 @@
 import { LegalPage } from '@/components/legal-page'; import { legalContent } from '@/lib/legal-content'; import { localizedMetadata } from '@/lib/seo'; import type { PublicLocale } from '@/lib/business-config';
-export function generateMetadata({params}:{params:{locale:PublicLocale}}){const p=legalContent['refund-cancellation-policy'];return localizedMetadata(params.locale,'refund-cancellation-policy',p.title[params.locale],p.description[params.locale])} export default function Page({params}:{params:{locale:PublicLocale}}){return <LegalPage locale={params.locale} slug="refund-cancellation-policy"/>}
+export async function generateMetadata(props:{params: Promise<{locale:PublicLocale}>}) {
+  const params = await props.params;
+  const p=legalContent['refund-cancellation-policy'];return localizedMetadata(params.locale,'refund-cancellation-policy',p.title[params.locale],p.description[params.locale])
+} export default async function Page(props:{params: Promise<{locale:PublicLocale}>}) {
+  const params = await props.params;
+  return <LegalPage locale={params.locale} slug="refund-cancellation-policy"/>
+}

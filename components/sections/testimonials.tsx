@@ -10,7 +10,6 @@ export interface TestimonialData {
   clientName: string;
   clientRole: string | null;
   clientCompany: string | null;
-  clientCountry: string | null;
   reviewEn: string;
   reviewAr: string | null;
   rating: number;
@@ -48,7 +47,7 @@ export function Testimonials({ testimonials }: { testimonials: TestimonialData[]
                   ))}
                 </div>
                 <p className="text-ink-secondary text-sm leading-relaxed mb-6 relative z-10">
-                  &ldquo;{locale === 'ar' ? testimonial.reviewAr ?? testimonial.reviewEn : testimonial.reviewEn}&rdquo;
+                  &ldquo;{locale === 'ar' ? testimonial.reviewAr : testimonial.reviewEn}&rdquo;
                 </p>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-purple-500 to-brand-cyan-500 flex items-center justify-center text-white font-display font-bold text-sm">
@@ -61,7 +60,6 @@ export function Testimonials({ testimonials }: { testimonials: TestimonialData[]
                     <p className="text-ink-muted text-xs">
                       {testimonial.clientRole}
                       {testimonial.clientCompany ? ` · ${testimonial.clientCompany}` : ''}
-                      {testimonial.clientCountry ? ` · ${testimonial.clientCountry}` : ''}
                     </p>
                   </div>
                 </div>

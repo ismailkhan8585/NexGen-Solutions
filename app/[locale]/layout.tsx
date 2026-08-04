@@ -4,6 +4,8 @@ import { I18nProvider } from '@/components/i18n-provider';
 import { getDir, type Locale } from '@/lib/i18n';
 import en from '@/messages/en.json';
 import ar from '@/messages/ar.json';
+import { MobileActionBar } from '@/components/layout/mobile-action-bar';
+import { CookieNotice } from '@/components/layout/cookie-notice';
 
 const messages = { en, ar } as const;
 
@@ -11,13 +13,18 @@ export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));
 }
 
-export default async function LocaleLayout({
-  children,
-  params,
-}: {
-  children: React.ReactNode;
-  params: { locale: string };
-}) {
+export default async function LocaleLayout(
+  props: {
+    children: React.ReactNode;
+    params: Promise<{ locale: string }>;
+  }
+) {
+  const params = await props.params;
+
+  const {
+    children
+  } = props;
+
   const locale = params.locale as Locale;
   if (!LOCALES.includes(locale)) notFound();
 
@@ -25,8 +32,10 @@ export default async function LocaleLayout({
 
   return (
     <I18nProvider initialLocale={locale} initialMessages={messages[locale]}>
-      <div dir={dir} className="min-h-screen bg-surface">
+      <div dir={dir} className="min-h-screen bg-surface pb-20 md:pb-0">
         {children}
+        <MobileActionBar />
+        <CookieNotice />
       </div>
     </I18nProvider>
   );

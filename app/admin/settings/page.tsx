@@ -16,12 +16,9 @@ export default function SettingsPage() {
     githubUrl: '',
     twitterUrl: '',
     instagramUrl: '',
-    totalProjects: 100,
-    totalClients: 50,
-    totalCountries: 10,
-    yearsExperience: 5,
   });
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     fetch('/api/admin/settings').then((r) => r.ok ? r.json() : null).then((d) => {
@@ -31,11 +28,13 @@ export default function SettingsPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    await fetch('/api/admin/settings', {
+    setSaved(false); setError('');
+    const response = await fetch('/api/admin/settings', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form),
     });
+    if (!response.ok) { setError('Settings were not saved. Check your permissions and required fields.'); return; }
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   }
@@ -95,28 +94,7 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <div className="bg-surface-card border border-surface-border rounded-2xl p-6">
-          <h2 className="font-display font-semibold text-white text-lg mb-4">Homepage Stats</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-ink-muted text-xs mb-1">Projects</label>
-              <input type="number" value={form.totalProjects} onChange={(e) => setForm({ ...form, totalProjects: parseInt(e.target.value) || 0 })} className="w-full rounded-xl bg-surface border border-surface-border px-4 py-2.5 text-white text-sm focus:outline-none focus:border-brand-purple-500" />
-            </div>
-            <div>
-              <label className="block text-ink-muted text-xs mb-1">Clients</label>
-              <input type="number" value={form.totalClients} onChange={(e) => setForm({ ...form, totalClients: parseInt(e.target.value) || 0 })} className="w-full rounded-xl bg-surface border border-surface-border px-4 py-2.5 text-white text-sm focus:outline-none focus:border-brand-purple-500" />
-            </div>
-            <div>
-              <label className="block text-ink-muted text-xs mb-1">Countries</label>
-              <input type="number" value={form.totalCountries} onChange={(e) => setForm({ ...form, totalCountries: parseInt(e.target.value) || 0 })} className="w-full rounded-xl bg-surface border border-surface-border px-4 py-2.5 text-white text-sm focus:outline-none focus:border-brand-purple-500" />
-            </div>
-            <div>
-              <label className="block text-ink-muted text-xs mb-1">Years</label>
-              <input type="number" value={form.yearsExperience} onChange={(e) => setForm({ ...form, yearsExperience: parseInt(e.target.value) || 0 })} className="w-full rounded-xl bg-surface border border-surface-border px-4 py-2.5 text-white text-sm focus:outline-none focus:border-brand-purple-500" />
-            </div>
-          </div>
-        </div>
-
+        {error && <p role="alert" className="text-sm text-rose-400">{error}</p>}
         <button type="submit" className="inline-flex items-center gap-2 bg-gradient-to-r from-brand-purple-500 to-brand-cyan-500 text-white rounded-xl px-6 py-3 font-semibold text-sm hover:shadow-lg transition-all">
           <Save className="w-4 h-4" /> {saved ? 'Saved!' : 'Save Settings'}
         </button>

@@ -1,6 +1,6 @@
 # NexGen Solutions website
 
-Arabic-first, bilingual company website built with Next.js 13 App Router, React 18, TypeScript, Prisma, PostgreSQL, and Tailwind CSS.
+Arabic-first, bilingual company website built with Next.js 15 App Router, React 18, TypeScript, Prisma, PostgreSQL, and Tailwind CSS.
 
 ## Local development
 
@@ -53,10 +53,20 @@ No destructive Prisma command is part of build or installation. Vercel runs `pri
 ```text
 npm run lint
 npm run typecheck
+npm test
 npm run build
 ```
 
-There is currently no automated test suite or `test` script. Add route, form, and accessibility tests before expanding into Step 2 features.
+The automated suite covers estimator calculations and enquiry validation. Run a browser accessibility and Core Web Vitals audit against the deployed environment before launch.
+
+## Production feature notes
+
+- The project estimator is a non-binding SAR range; its complete summary can be transferred into the enquiry form or WhatsApp when a verified Saudi mobile number is configured.
+- Enquiries are persisted before the UI reports success. The API validates origin, rate-limits requests, includes bot controls, caps request size, and stores consent, language, and estimator context.
+- Industry and support pages describe capabilities and proposed service levels only. Integration names do not claim an active partnership, certification, or completed integration.
+- Editorial ideas shown on the empty blog are explicitly drafts. Only published database records become public articles.
+- The cookie notice describes essential storage only. Add a consent manager before introducing optional analytics, advertising, or marketing cookies.
+- Admin publishing is role-controlled: editors can manage drafts while publication and destructive actions remain restricted to super administrators.
 
 ## Deployment
 
@@ -71,5 +81,7 @@ npm run db:migrate:deploy
 ```
 
 Do not use `prisma db push` in production. The migration does not delete or rename existing columns or records.
+
+The trust/content phase adds `20260803100000_verified_public_content`. It preserves existing projects, testimonials, and team records but makes them private by default. After deploying the migration, a super administrator must review each record, classify projects as Demo or Client, add complete Arabic content where needed, confirm image URLs and publication permission, and then enable the verification flag. Verified results require their own evidence flag.
 
 `INQUIRY_WEBHOOK_URL` is optional. When configured it must be HTTPS and receives only the stored lead reference, selected service, and preferred language. Connect that endpoint to a reviewed email/CRM workflow; full personal details remain in the protected admin system.

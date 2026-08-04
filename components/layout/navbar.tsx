@@ -39,10 +39,12 @@ export function Navbar() {
 
   const navLinks = [
     { href: `/${locale}/services`, label: t('nav.services') },
+    { href: `/${locale}/industries`, label: locale === 'ar' ? 'القطاعات' : 'Industries' },
     { href: `/${locale}/work`, label: t('nav.work') },
     { href: `/${locale}/about`, label: t('nav.about') },
     { href: `/${locale}/team`, label: t('nav.team') },
     { href: `/${locale}/blog`, label: t('nav.blog') },
+    { href: `/${locale}/support`, label: locale === 'ar' ? 'الدعم' : 'Support' },
     { href: `/${locale}/contact`, label: t('nav.contact') },
   ];
 
@@ -64,7 +66,7 @@ export function Navbar() {
             <span className="hidden max-w-[180px] truncate font-display font-bold text-white sm:block">{businessConfig.companyName[locale]}</span>
           </Link>
 
-          <div className="hidden lg:flex items-center gap-8">
+          <div className="hidden lg:flex items-center gap-5">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -80,7 +82,7 @@ export function Navbar() {
           <div className="flex items-center gap-3">
             <LanguageToggle className="hidden sm:inline-flex" />
             <Link
-              href={`/${locale}#contact`}
+              href={`/${locale}/contact`}
               className="hidden md:inline-flex"
             >
               <GradientButton className="text-sm px-4 py-2">
@@ -144,7 +146,7 @@ export function Navbar() {
                 className="w-full"
                 onClick={() => {
                   setMobileOpen(false);
-                  window.location.href = `/${locale}#contact`;
+                  window.location.href = `/${locale}/contact`;
                 }}
               >
                 {t('nav.getQuote')}

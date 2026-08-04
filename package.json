@@ -9,10 +9,11 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts",
     "seed": "tsx prisma/seed.ts",
     "db:push": "prisma db push",
-    "db:generate": "prisma generate"
-    ,"db:migrate:deploy": "prisma migrate deploy"
+    "db:generate": "prisma generate",
+    "db:migrate:deploy": "prisma migrate deploy"
   },
   "dependencies": {
     "@netlify/plugin-nextjs": "^5.15.1",
@@ -54,11 +55,11 @@
     "cmdk": "^1.0.0",
     "embla-carousel-react": "^8.3.0",
     "eslint": "8.49.0",
-    "eslint-config-next": "13.5.11",
+    "eslint-config-next": "^15.5.21",
     "framer-motion": "^12.43.0",
     "input-otp": "^1.2.4",
     "lucide-react": "^0.446.0",
-    "next": "13.5.11",
+    "next": "^15.5.21",
     "next-auth": "^4.24.15",
     "next-themes": "^0.3.0",
     "postcss": "8.5.25",
@@ -81,5 +82,8 @@
     "@typescript-eslint/typescript-estree": {
       "minimatch": "9.0.9"
     }
+  },
+  "devDependencies": {
+    "tsx": "^4.23.5"
   }
 }

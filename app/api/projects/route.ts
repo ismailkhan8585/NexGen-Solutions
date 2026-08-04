@@ -10,7 +10,7 @@ export async function GET(request: Request) {
     const featured = searchParams.get('featured');
     const category = searchParams.get('category');
 
-    const where: Record<string, unknown> = { isActive: true };
+    const where: Record<string, unknown> = { isActive: true, isVerified: true };
     if (featured === 'true') where.featured = true;
     if (category) where.category = category;
 
@@ -23,6 +23,7 @@ export async function GET(request: Request) {
         titleEn: true,
         titleAr: true,
         category: true,
+        classification: true,
         coverImage: true,
         liveUrl: true,
         githubUrl: true,

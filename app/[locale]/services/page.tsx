@@ -5,13 +5,16 @@ import { Navbar } from '@/components/layout/navbar';
 import { Footer } from '@/components/layout/footer';
 import { FloatingWhatsApp } from '@/components/layout/floating-whatsapp';
 import { serviceCatalog } from '@/lib/service-catalog';
+import { localizedMetadata } from '@/lib/seo';
 
-export function generateMetadata({ params }: { params: { locale: string } }): Metadata {
+export async function generateMetadata(props: { params: Promise<{ locale: 'ar' | 'en' }> }): Promise<Metadata> {
+  const params = await props.params;
   const ar = params.locale === 'ar';
-  return { title: ar ? 'الخدمات الرقمية' : 'Digital Services', description: ar ? 'خدمات تطوير وتصميم وأتمتة للأعمال في السعودية.' : 'Development, design, and automation services for businesses across Saudi Arabia.' };
+  return localizedMetadata(params.locale, 'services', ar ? 'الخدمات الرقمية' : 'Digital Services', ar ? 'خدمات تطوير وتصميم وأتمتة للأعمال في السعودية.' : 'Development, design, and automation services for businesses across Saudi Arabia.');
 }
 
-export default function ServicesPage({ params }: { params: { locale: 'ar' | 'en' } }) {
+export default async function ServicesPage(props: { params: Promise<{ locale: 'ar' | 'en' }> }) {
+  const params = await props.params;
   const locale = params.locale;
   const Arrow = locale === 'ar' ? ArrowLeft : ArrowRight;
   return <><Navbar /><main className="pt-[72px]"><section className="section-padding bg-surface"><div className="container-max px-4 sm:px-6 lg:px-8">
