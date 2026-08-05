@@ -1,95 +1,121 @@
-import { Suspense } from 'react';
-import type { Metadata } from 'next';
-import { Navbar } from '@/components/layout/navbar';
-import { Footer } from '@/components/layout/footer';
-import { FloatingWhatsApp } from '@/components/layout/floating-whatsapp';
-import { Hero } from '@/components/sections/hero';
-import { Credibility } from '@/components/sections/credibility';
-import { Services } from '@/components/sections/services';
-import { WhyUs } from '@/components/sections/why-us';
-import { IndustryPreview } from '@/components/sections/industry-preview';
-import { Portfolio } from '@/components/sections/portfolio';
-import { Process } from '@/components/sections/process';
-import { Testimonials } from '@/components/sections/testimonials';
-import { FAQ } from '@/components/sections/faq';
-import { DeferredContact } from '@/components/sections/deferred-contact';
-import { FinalCta } from '@/components/sections/final-cta';
-import { ensurePrismaConnection, prisma } from '@/lib/prisma';
-import { listFaqs } from '@/lib/faqs';
-import { localizedMetadata } from '@/lib/seo';
-import type { Locale } from '@/lib/i18n';
+import { Suspense } from "react";
+import type { Metadata } from "next";
+import { Navbar } from "@/components/layout/navbar";
+import { Footer } from "@/components/layout/footer";
+import { FloatingWhatsApp } from "@/components/layout/floating-whatsapp";
+import { Hero } from "@/components/sections/hero";
+import { Credibility } from "@/components/sections/credibility";
+import { Services } from "@/components/sections/services";
+import { IndustryPreview } from "@/components/sections/industry-preview";
+import { Portfolio } from "@/components/sections/portfolio";
+import { Testimonials } from "@/components/sections/testimonials";
+import { FAQ } from "@/components/sections/faq";
+import { DeferredContact } from "@/components/sections/deferred-contact";
+import { ensurePrismaConnection, prisma } from "@/lib/prisma";
+import { listFaqs } from "@/lib/faqs";
+import { localizedMetadata } from "@/lib/seo";
+import type { Locale } from "@/lib/i18n";
 
 // Revalidate periodically as a safety net. Relevant admin mutations invalidate the page immediately.
 export const revalidate = 300;
 
-export async function generateMetadata(props: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
+export async function generateMetadata(props: {
+  params: Promise<{ locale: Locale }>;
+}): Promise<Metadata> {
   const { locale } = await props.params;
   return localizedMetadata(
     locale,
-    '',
-    locale === 'ar' ? 'نيكس جين سولوشنز | حلول رقمية للأعمال في السعودية' : 'NexGen Solutions | Digital Solutions for Saudi Businesses',
-    locale === 'ar' ? 'تصميم وتطوير مواقع وتطبيقات وحلول برمجية مخصصة للأعمال في السعودية.' : 'Websites, applications, and custom software solutions for businesses across Saudi Arabia.',
+    "",
+    locale === "ar"
+      ? "نيكس جين سولوشنز | حلول رقمية للأعمال في السعودية"
+      : "NexGen Solutions | Digital Solutions for Saudi Businesses",
+    locale === "ar"
+      ? "تصميم وتطوير مواقع وتطبيقات وحلول برمجية مخصصة للأعمال في السعودية."
+      : "Websites, applications, and custom software solutions for businesses across Saudi Arabia.",
   );
 }
 
 async function loadHomepageData(locale: Locale) {
-  await ensurePrismaConnection();
-  const [services, projects, testimonials] = await prisma.$transaction([
-    prisma.service.findMany({
-      where: { isActive: true, ...(locale === 'ar' ? { nameAr: { not: null }, descriptionAr: { not: null } } : {}) },
-      orderBy: { sortOrder: 'asc' },
-      take: 20,
-      select: {
-        id: true,
-        slug: true,
-        nameEn: true,
-        nameAr: true,
-        descriptionEn: true,
-        descriptionAr: true,
-        icon: true,
-        startingPrice: true,
-        techStack: true,
-      },
-    }),
-    prisma.project.findMany({
-      where: { isActive: true, isVerified: true, featured: true, ...(locale === 'ar' ? { titleAr: { not: null } } : {}) },
-      orderBy: { createdAt: 'desc' },
-      take: 3,
-      select: {
-        id: true,
-        slug: true,
-        titleEn: true,
-        titleAr: true,
-        category: true,
-        classification: true,
-        challengeEn: true,
-        challengeAr: true,
-        solutionEn: true,
-        solutionAr: true,
-        featuresEn: true,
-        featuresAr: true,
-        coverImage: true,
-        liveUrl: true,
-        techStack: true,
-      },
-    }),
-    prisma.testimonial.findMany({
-      where: { isApproved: true, isVerified: true, ...(locale === 'ar' ? { reviewAr: { not: null } } : {}) },
-      orderBy: { createdAt: 'desc' },
-      take: 6,
-      select: {
-        id: true,
-        clientName: true,
-        clientRole: true,
-        clientCompany: true,
-        reviewEn: true,
-        reviewAr: true,
-        rating: true,
-      },
-    }),
-  ]);
-  const faqs = await listFaqs(true).then((items) => items.slice(0, 12)).catch(() => []);
-  return { services, projects, testimonials, faqs };
+  try {
+    await ensurePrismaConnection();
+    const [[services, projects, testimonials], faqs] = await Promise.all([
+      prisma.$transaction([
+        prisma.service.findMany({
+          where: {
+            isActive: true,
+            ...(locale === "ar"
+              ? { nameAr: { not: null }, descriptionAr: { not: null } }
+              : {}),
+          },
+          orderBy: { sortOrder: "asc" },
+          take: 20,
+          select: {
+            id: true,
+            slug: true,
+            nameEn: true,
+            nameAr: true,
+            descriptionEn: true,
+            descriptionAr: true,
+            icon: true,
+            startingPrice: true,
+            techStack: true,
+          },
+        }),
+        prisma.project.findMany({
+          where: {
+            isActive: true,
+            isVerified: true,
+            featured: true,
+            ...(locale === "ar" ? { titleAr: { not: null } } : {}),
+          },
+          orderBy: { createdAt: "desc" },
+          take: 2,
+          select: {
+            id: true,
+            slug: true,
+            titleEn: true,
+            titleAr: true,
+            category: true,
+            classification: true,
+            challengeEn: true,
+            challengeAr: true,
+            solutionEn: true,
+            solutionAr: true,
+            featuresEn: true,
+            featuresAr: true,
+            coverImage: true,
+            liveUrl: true,
+            techStack: true,
+          },
+        }),
+        prisma.testimonial.findMany({
+          where: {
+            isApproved: true,
+            isVerified: true,
+            ...(locale === "ar" ? { reviewAr: { not: null } } : {}),
+          },
+          orderBy: { createdAt: "desc" },
+          take: 6,
+          select: {
+            id: true,
+            clientName: true,
+            clientRole: true,
+            clientCompany: true,
+            reviewEn: true,
+            reviewAr: true,
+            rating: true,
+          },
+        }),
+      ]),
+      listFaqs(true)
+        .then((items) => items.slice(0, 4))
+        .catch(() => []),
+    ]);
+    return { services, projects, testimonials, faqs };
+  } catch {
+    // Marketing content remains usable while the optional managed-content database is unavailable.
+    return { services: [], projects: [], testimonials: [], faqs: [] };
+  }
 }
 
 type HomepageData = Awaited<ReturnType<typeof loadHomepageData>>;
@@ -105,24 +131,66 @@ async function HomepagePortfolio({ data, locale }: DataProps) {
 
 async function HomepageTestimonials({ data, locale }: DataProps) {
   const testimonials = (await data).testimonials;
-  return testimonials.length > 0 ? <Testimonials testimonials={testimonials} locale={locale} /> : null;
+  return testimonials.length > 0 ? (
+    <Testimonials testimonials={testimonials} locale={locale} />
+  ) : null;
 }
 
 async function HomepageFaq({ data, locale }: DataProps) {
-  return <FAQ items={(await data).faqs} locale={locale} />;
+  return <FAQ items={(await data).faqs} locale={locale} limit={4} />;
 }
 
-function SectionFallback({ label, minHeight = 'min-h-[520px]' }: { label: string; minHeight?: string }) {
+function SectionFallback({
+  label,
+  minHeight = "min-h-[520px]",
+}: {
+  label: string;
+  minHeight?: string;
+}) {
   return (
-    <section className="section-padding bg-surface" aria-label={label} aria-busy="true">
+    <section
+      className="section-padding bg-surface"
+      aria-label={label}
+      aria-busy="true"
+    >
       <div className="container-max px-4 sm:px-6 lg:px-8">
-        <div className={`${minHeight} rounded-3xl border border-surface-border bg-surface-card/40`} />
+        <div
+          className={`${minHeight} rounded-3xl border border-surface-border bg-surface-card/40`}
+        />
       </div>
     </section>
   );
 }
 
-export default async function HomePage(props: { params: Promise<{ locale: Locale }> }) {
+function ContactHydrationFallback({ locale }: { locale: Locale }) {
+  return (
+    <section
+      id="contact"
+      className="section-padding min-h-[760px] bg-surface"
+      aria-busy="true"
+    >
+      <div className="container-max px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-3xl rounded-3xl border border-surface-border bg-surface-card px-6 py-12 text-center sm:px-10">
+          <p className="section-kicker">
+            {locale === "ar" ? "تواصل معنا" : "Contact us"}
+          </p>
+          <h2 className="mt-4 font-display text-3xl font-bold text-white sm:text-4xl">
+            {locale === "ar"
+              ? "أخبرنا عن مشروعك"
+              : "Tell us about your project"}
+          </h2>
+          <p className="mt-5 text-sm text-ink-secondary" role="status">
+            {locale === "ar" ? "جارٍ تفعيل النموذج…" : "Activating the form…"}
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export default async function HomePage(props: {
+  params: Promise<{ locale: Locale }>;
+}) {
   const { locale } = await props.params;
   const data = loadHomepageData(locale);
 
@@ -132,23 +200,49 @@ export default async function HomePage(props: { params: Promise<{ locale: Locale
       <main>
         <Hero locale={locale} />
         <Credibility locale={locale} />
-        <Suspense fallback={<SectionFallback label={locale === 'ar' ? 'جارٍ تحميل الخدمات' : 'Loading services'} />}>
+        <Suspense
+          fallback={
+            <SectionFallback
+              label={
+                locale === "ar" ? "جارٍ تحميل الخدمات" : "Loading services"
+              }
+            />
+          }
+        >
           <HomepageServices data={data} locale={locale} />
         </Suspense>
         <IndustryPreview locale={locale} />
-        <Suspense fallback={<SectionFallback label={locale === 'ar' ? 'جارٍ تحميل الأعمال' : 'Loading selected work'} minHeight="min-h-[640px]" />}>
+        <Suspense
+          fallback={
+            <SectionFallback
+              label={
+                locale === "ar" ? "جارٍ تحميل الأعمال" : "Loading selected work"
+              }
+              minHeight="min-h-[640px]"
+            />
+          }
+        >
           <HomepagePortfolio data={data} locale={locale} />
         </Suspense>
-        <Process locale={locale} />
-        <WhyUs locale={locale} />
         <Suspense fallback={null}>
           <HomepageTestimonials data={data} locale={locale} />
         </Suspense>
-        <Suspense fallback={<SectionFallback label={locale === 'ar' ? 'جارٍ تحميل الأسئلة الشائعة' : 'Loading frequently asked questions'} />}>
+        <Suspense
+          fallback={
+            <SectionFallback
+              label={
+                locale === "ar"
+                  ? "جارٍ تحميل الأسئلة الشائعة"
+                  : "Loading frequently asked questions"
+              }
+            />
+          }
+        >
           <HomepageFaq data={data} locale={locale} />
         </Suspense>
-        <DeferredContact locale={locale} />
-        <FinalCta locale={locale} />
+        <Suspense fallback={<ContactHydrationFallback locale={locale} />}>
+          <DeferredContact locale={locale} />
+        </Suspense>
       </main>
       <Footer />
       <FloatingWhatsApp />

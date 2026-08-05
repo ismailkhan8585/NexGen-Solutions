@@ -5,6 +5,7 @@ import { Github, Instagram, Linkedin, Mail, MapPin, Phone, Twitter } from 'lucid
 import { useI18n } from '@/components/i18n-provider';
 import { LanguageToggle } from '@/components/layout/language-toggle';
 import { businessConfig, formatSaudiPhone, getWhatsAppUrl } from '@/lib/business-config';
+import { BrandMark } from '@/components/brand/brand-mark';
 
 export function Footer() {
   const { t, locale } = useI18n();
@@ -46,7 +47,7 @@ export function Footer() {
     <footer className="border-t border-surface-border bg-[#070809]">
       <div className="container-max px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
         <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-[1.35fr_repeat(4,1fr)]">
-          <div className="sm:col-span-2 lg:col-span-1"><Link href={`/${locale}`} className="inline-flex items-center gap-3" aria-label={t('common.homeLabel')}><span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white font-display font-bold text-surface">NG</span><span className="font-display text-lg font-bold text-white">{businessConfig.companyName[locale]}</span></Link><p className="mt-5 max-w-sm text-sm leading-7 text-ink-secondary">{ar ? 'منتجات رقمية تبدأ بالعربية، مصممة للأعمال في السعودية بتركيز على الأداء والوضوح وقابلية التطوير.' : 'Arabic-first digital products for Saudi businesses, designed for performance, clarity, and long-term maintainability.'}</p><div className="mt-6"><LanguageToggle /></div>{socials.length > 0 && <div className="mt-5 flex gap-2">{socials.map(({ icon: Icon, href, label }) => <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label} className="flex h-11 w-11 items-center justify-center rounded-xl border border-surface-border text-ink-secondary transition hover:border-brand-cyan-500/30 hover:text-white"><Icon className="h-4 w-4" /></a>)}</div>}</div>
+          <div className="sm:col-span-2 lg:col-span-1"><Link href={`/${locale}`} className="inline-flex items-center gap-3" aria-label={t('common.homeLabel')}><BrandMark label={`${businessConfig.companyName[locale]} logo`} /><span className="font-display text-lg font-bold text-white">{businessConfig.companyName[locale]}</span></Link><p className="mt-5 max-w-sm text-sm leading-7 text-ink-secondary">{ar ? 'منتجات رقمية تبدأ بالعربية، مصممة للأعمال في السعودية بتركيز على الأداء والوضوح وقابلية التطوير.' : 'Arabic-first digital products for Saudi businesses, designed for performance, clarity, and long-term maintainability.'}</p><div className="mt-6"><LanguageToggle /></div>{socials.length > 0 && <div className="mt-5 flex gap-2">{socials.map(({ icon: Icon, href, label }) => <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label} className="flex h-11 w-11 items-center justify-center rounded-xl border border-surface-border text-ink-secondary transition hover:border-brand-cyan-500/30 hover:text-white"><Icon className="h-4 w-4" /></a>)}</div>}</div>
           <FooterColumn title={ar ? 'الخدمات' : 'Services'} links={services} />
           <FooterColumn title={ar ? 'القطاعات' : 'Industries'} links={industries} />
           <FooterColumn title={ar ? 'الشركة' : 'Company'} links={company} />

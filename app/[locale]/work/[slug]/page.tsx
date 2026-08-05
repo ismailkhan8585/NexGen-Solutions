@@ -6,8 +6,8 @@ import { prisma } from '@/lib/prisma';
 import { Navbar } from '@/components/layout/navbar'; import { Footer } from '@/components/layout/footer'; import { FloatingWhatsApp } from '@/components/layout/floating-whatsapp'; import { WhatsAppButton } from '@/components/layout/whatsapp-button'; import { ProjectImage } from '@/components/media/project-image';
 import { businessConfig } from '@/lib/business-config'; import { localizedMetadata } from '@/lib/seo'; import { isDemoProject } from '@/lib/projects';
 
-export const dynamic='force-dynamic'; export const revalidate=0;
-const getProject=cache((slug:string)=>prisma.project.findFirst({where:{slug,isActive:true,isVerified:true},include:{testimonials:{where:{isApproved:true,isVerified:true}}}}));
+export const revalidate=300;
+const getProject=cache((slug:string)=>prisma.project.findFirst({where:{slug,isActive:true,isVerified:true}}));
 export async function generateMetadata(props:{params: Promise<{slug:string;locale:'ar'|'en'}>}) {
   const params = await props.params;
   const p=await getProject(params.slug);if(!p||(params.locale==='ar'&&!p.titleAr))return {};const title=params.locale==='ar'?p.titleAr!:p.titleEn;const description=params.locale==='ar'?p.descriptionAr??'':p.descriptionEn??'';return localizedMetadata(params.locale,`work/${p.slug}`,title,description)

@@ -11,7 +11,7 @@ type ManagedFaq = {
   answerAr: string | null;
 };
 
-export function FAQ({ items = [], locale }: { items?: ManagedFaq[]; locale: Locale }) {
+export function FAQ({ items = [], locale, limit = 8 }: { items?: ManagedFaq[]; locale: Locale; limit?: number }) {
   const t = (key: string) => serverTranslate(locale, key);
   const translatedFallback = Array.from({ length: 8 }, (_, index) => ({
     q: t(`faq.q${index + 1}`),
@@ -22,12 +22,12 @@ export function FAQ({ items = [], locale }: { items?: ManagedFaq[]; locale: Loca
     const a = locale === 'ar' ? item.answerAr : item.answerEn;
     return q && a ? [{ q, a }] : [];
   });
-  const faqs = managed.length ? managed : translatedFallback;
+  const faqs = (managed.length ? managed : translatedFallback).slice(0, limit);
 
   return (
     <section className="section-padding relative bg-surface">
       <div className="container-max relative z-10">
-        <div className="mb-16 text-center">
+        <div className="mb-10 text-center">
           <GradientBadge className="mb-4">{t('faq.badge')}</GradientBadge>
           <h2 className="mb-4 font-display text-3xl font-bold text-white sm:text-4xl lg:text-5xl">{t('faq.title')}</h2>
           <p className="mx-auto max-w-2xl text-lg text-ink-secondary">{t('faq.subtitle')}</p>

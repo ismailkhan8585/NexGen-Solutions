@@ -8,7 +8,7 @@ import { GradientBadge } from '@/components/ui/gradient-badge';
 import { Linkedin, Github, Twitter } from 'lucide-react';
 import { localizedMetadata } from '@/lib/seo';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
 
 export async function generateMetadata(props: { params: Promise<{ locale: 'ar' | 'en' }> }): Promise<Metadata> {
   const params = await props.params;

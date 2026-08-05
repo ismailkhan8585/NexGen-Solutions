@@ -1,36 +1,54 @@
-import './globals.css';
-import type { Metadata } from 'next';
-import { headers } from 'next/headers';
-import { businessConfig } from '@/lib/business-config';
-import { JsonLd, organizationSchema } from '@/lib/seo';
+import "./globals.css";
+import type { Metadata } from "next";
+import { headers } from "next/headers";
+import { Inter, Noto_Sans_Arabic } from "next/font/google";
+import { businessConfig } from "@/lib/business-config";
+import { JsonLd, organizationSchema } from "@/lib/seo";
+
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
+  weight: ["400", "600", "700"],
+});
+
+const notoSansArabic = Noto_Sans_Arabic({
+  subsets: ["arabic"],
+  display: "swap",
+  variable: "--font-noto-arabic",
+  weight: ["400", "600", "700"],
+});
 
 export async function generateMetadata(): Promise<Metadata> {
-  const locale = (await headers()).get('x-site-locale') === 'en' ? 'en' : 'ar';
-  const isArabic = locale === 'ar';
+  const locale = (await headers()).get("x-site-locale") === "en" ? "en" : "ar";
+  const isArabic = locale === "ar";
   const title = isArabic
-    ? 'نيكس جين سولوشنز | حلول رقمية للأعمال في السعودية'
-    : 'NexGen Solutions | Digital Solutions for Saudi Businesses';
+    ? "نيكس جين سولوشنز | حلول رقمية للأعمال في السعودية"
+    : "NexGen Solutions | Digital Solutions for Saudi Businesses";
   const description = isArabic
-    ? 'نصمم ونطور مواقع وتطبيقات ومنصات رقمية عربية تلائم احتياجات الأعمال في المملكة العربية السعودية.'
-    : 'Arabic-first websites, applications, e-commerce platforms, and custom software for businesses across Saudi Arabia.';
+    ? "نصمم ونطور مواقع وتطبيقات ومنصات رقمية عربية تلائم احتياجات الأعمال في المملكة العربية السعودية."
+    : "Arabic-first websites, applications, e-commerce platforms, and custom software for businesses across Saudi Arabia.";
 
   return {
-    title: { default: title, template: `%s | ${businessConfig.companyName[locale]}` },
+    title: {
+      default: title,
+      template: `%s | ${businessConfig.companyName[locale]}`,
+    },
     description,
     metadataBase: new URL(businessConfig.appUrl),
     alternates: {
-      languages: { 'ar-SA': '/ar', 'en-SA': '/en' },
+      languages: { "ar-SA": "/ar", "en-SA": "/en" },
     },
     openGraph: {
-      type: 'website',
-      locale: isArabic ? 'ar_SA' : 'en_SA',
-      alternateLocale: isArabic ? 'en_SA' : 'ar_SA',
+      type: "website",
+      locale: isArabic ? "ar_SA" : "en_SA",
+      alternateLocale: isArabic ? "en_SA" : "ar_SA",
       url: businessConfig.appUrl,
       siteName: businessConfig.companyName[locale],
       title,
       description,
     },
-    twitter: { card: 'summary_large_image', title, description },
+    twitter: { card: "summary_large_image", title, description },
     robots: { index: true, follow: true },
   };
 }
@@ -40,11 +58,21 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const locale = (await headers()).get('x-site-locale') === 'en' ? 'en' : 'ar';
+  const locale = (await headers()).get("x-site-locale") === "en" ? "en" : "ar";
   return (
-    <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'} suppressHydrationWarning>
+    <html
+      lang={locale}
+      dir={locale === "ar" ? "rtl" : "ltr"}
+      className={`${inter.variable} ${notoSansArabic.variable}`}
+      suppressHydrationWarning
+    >
       <body className="font-body antialiased">
-        <JsonLd data={{ '@context': 'https://schema.org', ...organizationSchema(locale) }} />
+        <JsonLd
+          data={{
+            "@context": "https://schema.org",
+            ...organizationSchema(locale),
+          }}
+        />
         {children}
       </body>
     </html>

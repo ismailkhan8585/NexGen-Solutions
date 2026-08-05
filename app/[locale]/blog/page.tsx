@@ -8,8 +8,7 @@ import { BlogBrowser } from '@/components/blog/blog-browser';
 import { blogDraftIdeas } from '@/lib/blog-ideas';
 import { localizedMetadata } from '@/lib/seo';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const revalidate = 300;
 
 export async function generateMetadata(props: { params: Promise<{ locale: 'ar' | 'en' }> }): Promise<Metadata> {
   const params = await props.params;

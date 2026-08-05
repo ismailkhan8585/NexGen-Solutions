@@ -12,7 +12,7 @@ import { businessConfig } from '@/lib/business-config';
 import { JsonLd, localizedMetadata } from '@/lib/seo';
 import { ShareArticle } from '@/components/blog/share-article';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
 
 const getPost = cache(async (slug: string) => {
   await ensurePrismaConnection();

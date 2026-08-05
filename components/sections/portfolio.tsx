@@ -45,7 +45,7 @@ export function Portfolio({ projects, locale }: { projects: ProjectData[]; local
           </div>
         ) : (
           <div className="mt-10 grid gap-5 lg:grid-cols-2">
-            {projects.slice(0, 3).map((project, index) => {
+            {projects.slice(0, 2).map((project, index) => {
               const title = locale === 'ar' ? project.titleAr! : project.titleEn;
               const summary = locale === 'ar'
                 ? project.solutionAr ?? project.challengeAr

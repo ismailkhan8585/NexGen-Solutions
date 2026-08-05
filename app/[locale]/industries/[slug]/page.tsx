@@ -10,7 +10,7 @@ import { getIndustrySolution, industrySolutions } from '@/lib/industry-solutions
 import { JsonLd, localizedMetadata } from '@/lib/seo';
 import { prisma } from '@/lib/prisma';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
 export async function generateMetadata(props: { params: Promise<{ locale: PublicLocale; slug: string }> }) {
   const params = await props.params;
   const page = getIndustrySolution(params.slug);if (!page) return {};
